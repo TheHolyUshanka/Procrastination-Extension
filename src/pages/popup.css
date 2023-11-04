@@ -1,0 +1,17 @@
+.container {
+    width: fit-content;
+    height: fit-content;
+  }
+
+
+.ProductivityButton {
+    background-color: green;
+}
+
+.ProcrastionationButton {
+    background-color: red;
+}
+
+ul {
+    list-style-type: none;
+  }
