@@ -16,15 +16,15 @@ function Popup() {
 
   useEffect(() => {
     const fetchData = async () => {
-      setIsProductivity(await isCurrentUrlInList("productivity") ?? false);
-      setIsProcrastination(await isCurrentUrlInList("procrastination") ?? false);
+      setIsProductivity(await isCurrentUrlInList("productivity"));
+      setIsProcrastination(await isCurrentUrlInList("procrastination"));
     };
     fetchData();
   }, []);
 
   useEffect(() => {
     const fetchData = async () => {
-      setListOfProductivity(await getList("productivity") ?? [])
+      setListOfProductivity(await getList("productivity"))
     };
     fetchData();
   });
@@ -35,6 +35,7 @@ function Popup() {
       <>
         <li key={url}>{url}</li>
         <img src="https://static.twitchcdn.net/assets/favicon-32-e29e246c157142c94346.png"alt="Icon"/>
+        <button>Start</button>
       </>
     ));
   }
