@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import "./popup.css"
-import { test, isCurrentUrlInList, getList } from "../util/test"
+import { addCurentToList, isCurrentUrlInList, getList } from "../util/test"
 
 
 
@@ -16,28 +16,39 @@ function Popup() {
 
   useEffect(() => {
     const fetchData = async () => {
-      setIsProductivity(await isCurrentUrlInList("productivity"));
-      setIsProcrastination(await isCurrentUrlInList("procrastination"));
+      setIsProductivity(await isCurrentUrlInList("productivity") ?? false);
+      setIsProcrastination(await isCurrentUrlInList("procrastination") ?? false);
     };
     fetchData();
   }, []);
 
   useEffect(() => {
     const fetchData = async () => {
-      setListOfProductivity(await getList("productivity"))
+      setListOfProductivity(await getList("productivity") ?? [])
     };
     fetchData();
   });
 
-  const listHTML = listOfProductivity.map((url, index) => (
-    <li key={url}>{url}</li>
-  ));
+  let listHTML
+  try {
+    listHTML = listOfProductivity.map((url, index) => (
+      <>
+        <li key={url}>{url}</li>
+        <img src="https://static.twitchcdn.net/assets/favicon-32-e29e246c157142c94346.png"alt="Icon"/>
+      </>
+    ));
+  }
+  catch {
+    listHTML = <></>
+  }
+
+
 
 
   if (isProductivity) {
     return (
       <div>
-          <button className='ProductivityButton' onClick={() => test("productivity", setIsProductivity)}>Remove Productivity</button>
+          <button className='ProductivityButton' onClick={() => addCurentToList("productivity", setIsProductivity)}>Remove Productivity</button>
           <ul>
             {listHTML}
           </ul>
@@ -47,7 +58,7 @@ function Popup() {
   else if (isProcrastination) {
     return (
       <div>
-          <button className='ProcrastionationButton' onClick={() => test("procrastination", setIsProcrastination)}>Remove Procrastionation</button>
+          <button className='ProcrastionationButton' onClick={() => addCurentToList("procrastination", setIsProcrastination)}>Remove Procrastionation</button>
           <ul>
             {listHTML}
           </ul>
@@ -57,8 +68,8 @@ function Popup() {
   else {
     return (
       <div>
-          <button className='ProductivityButton' onClick={() => test("productivity", setIsProductivity)}>Add Productivity</button>
-          <button className='ProcrastionationButton' onClick={() => test("procrastination", setIsProcrastination)}>Add Procrastionation</button>
+          <button className='ProductivityButton' onClick={() => addCurentToList("productivity", setIsProductivity)}>Add Productivity</button>
+          <button className='ProcrastionationButton' onClick={() => addCurentToList("procrastination", setIsProcrastination)}>Add Procrastionation</button>
           <button className='SettingsButton'>Settings</button>
           <ul>
             {listHTML}
