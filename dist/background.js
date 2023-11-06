@@ -18,7 +18,8 @@ function startTimer(time) {
 async function runTime() {
     CurrentTimer--
     //console.log(Math.floor(CurrentTimer/60) +":"+CurrentTimer%60 + await getCurrentTab().url)
-    console.log(await getCurrentTab())
+    let tmp = await isCurrentUrlInList("procrastination")
+    console.log(tmp)
 };
 
 //https://developer.chrome.com/docs/extensions/reference/tabs/
@@ -64,15 +65,18 @@ async function sendMessageToCurrentContentScript(message) {
     // TODO: Do something with the response.
   }
 
-  const isCurrentUrlInList = (key) => {
+
+const isCurrentUrlInList = (key) => {
     return new Promise(async (resolve) => {
-        let [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+        let url = await getCurrentTab()
+
         chrome.storage.local.get(key, function(List){
             let tmp
             try {
-                tmp = List[key].includes(tab.url)
+                tmp = List[key].includes(url)
             }
             catch {
+                console.log("something")
                 tmp = false
             }
             resolve(tmp);
