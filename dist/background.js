@@ -34,26 +34,6 @@ async function getCurrentTab() {
     }
 }
 
-async function getCurrentTabUrl() {
-    try {
-        const tab = await getCurrentTab()
-        return tab.url.match(/(^(?:https?:\/\/)?)((?:[^@\/\n]+@)?)(?:www\.)?([^:\/?\n]+)/)[3]   
-    }
-    catch {
-        return false  
-    }
-}
-
-async function getCurrentTabIcon() {
-    try {
-        const tab = await getCurrentTab()
-        return tab.url.match(/(^(?:https?:\/\/)?)((?:[^@\/\n]+@)?)(?:www\.)?([^:\/?\n]+)/)[3]   
-    }
-    catch {
-        return false  
-    }
-}
-
 // chrome.tabs.onActivated.addListener(async (activeInfo) => {
     
 //     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
