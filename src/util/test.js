@@ -73,3 +73,29 @@ function formatUrl(text) {
         return false  
     }
 }
+
+// chrome.webNavigation.onBeforeNavigate.addListener((details) => {
+//     if (details.url.includes("example.com")) {
+//       const redirectUrl = "https://new-website.com";
+//       chrome.webNavigation.onBeforeNavigate.removeListener(); // Remove the listener
+//       chrome.tabs.update(details.tabId, { url: redirectUrl });
+//     }
+//   });
+
+
+// function redirect(tab) {
+//     let params = new URLSearchParams();
+//     params.append('page', 'intercepted');
+//     params.append('url', tab.url);
+
+//     let extensionUrl = chrome.runtime.getURL('index.html');
+//     let url = `${extensionUrl}?${params.toString()}`;
+
+//     chrome.tabs.update(tab.id, { url });
+// }
+
+export const redirectToURL = async(redirectURL) => {
+    //let id = await getCurrentTab().id
+    //chrome.tabs.update(id, { url: redirectURL });
+    chrome.tabs.update({ url: "https://" + redirectURL });
+}
