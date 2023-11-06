@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import "./popup.css"
-import { redirectToURL, addCurentToList, isCurrentUrlInList, getList } from "../util/test"
+import { redirectToUrlFromPopup, addCurentToList, isCurrentUrlInList, getList } from "../util/test"
 
 
 
@@ -30,7 +30,7 @@ function Popup() {
       <>
         <li key={url}>{url}</li>
         <img src="https://static.twitchcdn.net/assets/favicon-32-e29e246c157142c94346.png"alt="Icon"/>
-        <button onClick={async() => {await redirectToURL(url)}}>Start</button>
+        <button onClick={async() => {await redirectToUrlFromPopup(url)}}>Start</button>
       </>
     ));
   }

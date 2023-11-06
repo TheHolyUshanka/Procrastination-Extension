@@ -99,3 +99,8 @@ export const redirectToURL = async(redirectURL) => {
     //chrome.tabs.update(id, { url: redirectURL });
     chrome.tabs.update({ url: "https://" + redirectURL });
 }
+
+export const redirectToUrlFromPopup = async(redirectURL) => {
+    await redirectToURL(redirectURL)
+    window.close() //close the popup
+}
