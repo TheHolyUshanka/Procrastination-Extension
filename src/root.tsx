@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import Inject from "./pages/inject"
+import Inject from "./pages/Inject"
 
 
 const root = document.createElement("div")
