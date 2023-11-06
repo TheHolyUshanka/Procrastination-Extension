@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import "./popup.css"
-import { redirectToUrlFromPopup, addCurentToList, isCurrentUrlInList, getList } from "../util/test"
+import { redirectToUrlFromPopup, addCurentToList, isCurrentUrlInList, getList, sendMessageToBackground, setTimeListner } from "../util/test"
 
 
 
@@ -10,6 +10,7 @@ function Popup() {
   const [isProductivity, setIsProductivity] = useState(false);
   const [isProcrastination, setIsProcrastination] = useState(false);
   const [listOfProductivity, setListOfProductivity] = useState([]);
+  const [timer, setTimer] = useState("25:00");
 
 
 
@@ -23,6 +24,14 @@ function Popup() {
     fetchData();
   }, [isProductivity, isProcrastination]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      setTimeListner(setTimer)
+    };
+    fetchData();
+  }, []);
+
+
 
   let listHTML
   try {
@@ -30,7 +39,7 @@ function Popup() {
       <>
         <li key={url}>{url}</li>
         <img src="https://static.twitchcdn.net/assets/favicon-32-e29e246c157142c94346.png"alt="Icon"/>
-        <button onClick={async() => {await redirectToUrlFromPopup(url)}}>Start</button>
+        <button onClick={async() => {await redirectToUrlFromPopup(url); sendMessageToBackground("Start Pomodoro")}}>Start</button>
       </>
     ));
   }
@@ -44,6 +53,7 @@ function Popup() {
   if (isProductivity) {
     return (
       <div>
+          <h1>{timer}</h1>
           <button className='ProductivityButton' onClick={() => addCurentToList("productivity", setIsProductivity)}>Remove Productivity</button>
           <ul>
             {listHTML}

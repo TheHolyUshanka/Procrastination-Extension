@@ -2,12 +2,42 @@
 
 let CurrentTimer = 0
 let Running = false
+let timerState = "none"
+var intervalId
 
 
-function startTimer(time) {
-    if (!Running) {
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    switch (request.message) {
+        case "Start Pomodoro":
+        console.log("Do Start Pomodoro");
+        startPomodoro(25*60)
+          break;
+        default:
+          console.log("welp");
+      }
+  });
+
+
+
+function startPomodoro(time) {
+    console.log(timerState)
+    if (timerState === "none") {
         CurrentTimer = time
-        setInterval(runTime, 1000)
+        timerState = "pomodoro"
+        intervalId = setInterval(runTime, 1000)
+        return true
+    }
+    else {
+        return false
+    }
+};
+
+function startBreak(time) {
+    if (timerState !== "pomodoro") {
+        CurrentTimer = time
+        timerState = "break"
+        intervalId = setInterval(runTime, 1000)
         return true
     }
     else {
@@ -17,10 +47,22 @@ function startTimer(time) {
 
 async function runTime() {
     CurrentTimer--
-    //console.log(Math.floor(CurrentTimer/60) +":"+CurrentTimer%60 + await getCurrentTab().url)
-    let tmp = await isCurrentUrlInList("procrastination")
-    console.log(tmp)
+    console.log(Math.floor(CurrentTimer/60) +":"+CurrentTimer%60 + await getCurrentTab().url)
+    chrome.runtime.sendMessage({ message: "Timer Value", timer: timeFormatter(CurrentTimer) });
+
+    if(CurrentTimer <= 0) {
+        clearInterval(intervalId);
+    }
+    //let tmp = await isCurrentUrlInList("procrastination")
+    //console.log(tmp)
 };
+
+
+function timeFormatter(time) {
+    return Math.floor(time/60) +":"+time%60
+}
+
+
 
 //https://developer.chrome.com/docs/extensions/reference/tabs/
 async function getCurrentTab() {
@@ -35,34 +77,11 @@ async function getCurrentTab() {
     }
 }
 
-// chrome.tabs.onActivated.addListener(async (activeInfo) => {
-    
-//     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-//     chrome.scripting.executeScript({
-//       target: { tabId: tab.id },
-//       function: addHTMLToPage
-//     });
-// });
-
-// function addHTMLToPage() {
-//     // Create an HTML element and append it to the page
-//     const div = document.createElement('div');
-//     div.innerHTML = '<p>This is added by the extension!</p>';
-//     document.body.appendChild(div);
-//   }
-  
 async function sendMessageToCurrentContentScript(message) {
 
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         chrome.tabs.sendMessage(tabs[0].id, { message: message });
       });
-
-    // const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
-    // chrome.tabs.sendMessage(tab.id, message);
-
-    //const response = await chrome.tabs.sendMessage(tab.id, message);
-    // TODO: Do something with the response.
   }
 
 
@@ -101,7 +120,3 @@ const isCurrentUrlInList = (key) => {
         sendMessageToCurrentContentScript("Procrastinating")
     }
   });
-
-
-
-startTimer(25*60)

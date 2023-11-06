@@ -102,5 +102,20 @@ export const redirectToURL = async(redirectURL) => {
 
 export const redirectToUrlFromPopup = async(redirectURL) => {
     await redirectToURL(redirectURL)
-    window.close() //close the popup
+    //window.close() //close the popup
 }
+
+export const sendMessageToBackground = (text) => {
+    chrome.runtime.sendMessage({ message: text })
+}
+
+export const setTimeListner = (setter) => {
+    chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+        if (request.message=== "Timer Value") {
+            setter(request.timer)
+            console.log(request.timer)
+        }
+      });
+}
+
+//({ message: "Timer Value", timer: CurrentTimer });
