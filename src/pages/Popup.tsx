@@ -18,16 +18,11 @@ function Popup() {
     const fetchData = async () => {
       setIsProductivity(await isCurrentUrlInList("productivity"));
       setIsProcrastination(await isCurrentUrlInList("procrastination"));
-    };
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    const fetchData = async () => {
       setListOfProductivity(await getList("productivity"))
     };
     fetchData();
-  });
+  }, [isProductivity, isProcrastination]);
+
 
   let listHTML
   try {
