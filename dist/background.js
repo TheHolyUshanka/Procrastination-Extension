@@ -101,7 +101,16 @@ async function sendMessageToCurrentContentScript(message) {
 }
 
   chrome.tabs.onActivated.addListener(async (activeInfo) => {
-    console.log("listned")
+    console.log("onActivated")
+    let tmp = await isCurrentUrlInList("procrastination")
+    if (tmp) {
+        console.log("sending")
+        sendMessageToCurrentContentScript("Procrastinating")
+    }
+  });
+
+  chrome.tabs.onUpdated.addListener(async (activeInfo) => {
+    console.log("onUpdated")
     let tmp = await isCurrentUrlInList("procrastination")
     if (tmp) {
         console.log("sending")
