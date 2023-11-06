@@ -2,22 +2,25 @@
 
 export const addCurentToList = async (key, setter) => {
     //get current tab URL
-    let [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+    let [tab] = await getCurrentTab()
+    let url = formatUrl(tab.url)
+    console.log(url)
+
 
     chrome.storage.local.get(key, function(List){
         if (typeof List[key] === 'undefined') { //if list does not exist
-            chrome.storage.local.set({ [key]: [tab.url] }); //create with current tab
+            chrome.storage.local.set({ [key]: [url] }); //create with current tab
         }
 
         else { //else add or remove the URL from the list
             let tmp
-            if (List[key].includes(tab.url)) { //remove from list
-                tmp = List[key].filter(str => str !== tab.url);
+            if (List[key].includes(url)) { //remove from list
+                tmp = List[key].filter(str => str !== url);
                 chrome.storage.local.set({ [key]: tmp });
                 setter(false)
             }
             else { //add to list
-                tmp = [...List[key], tab.url]
+                tmp = [...List[key], url]
                 chrome.storage.local.set({ [key]: tmp });
                 setter(true)
             }
@@ -28,11 +31,12 @@ export const addCurentToList = async (key, setter) => {
 
 export const isCurrentUrlInList = (key) => {
     return new Promise(async (resolve) => {
-        let [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+        let [tab] = await getCurrentTab()
+        let url = formatUrl(tab.url)
         chrome.storage.local.get(key, function(List){
             let tmp
             try {
-                tmp = List[key].includes(tab.url)
+                tmp = List[key].includes(url)
             }
             catch {
                 tmp = false
@@ -47,6 +51,7 @@ export const getList = (key) => {
     return new Promise(async (resolve) => {
         chrome.storage.local.get(key, function(List){
             if (typeof List[key] !== 'undefined') { //if list does not exist
+                console.log(List[key])
                 resolve(List[key]);
             }
             else {
@@ -57,20 +62,12 @@ export const getList = (key) => {
 }
 
 async function getCurrentTab() {
-    let [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
-
-    try {
-        return tab.url.match(/(^(?:https?:\/\/)?)((?:[^@\/\n]+@)?)(?:www\.)?([^:\/?\n]+)/)[3]   
-    }
-    catch {
-        return false  
-    }
+    return await chrome.tabs.query({ active: true, lastFocusedWindow: true });
 }
 
-async function getCurrentTabUrl() {
+function formatUrl(text) {
     try {
-        const tab = await getCurrentTab()
-        return tab.url.match(/(^(?:https?:\/\/)?)((?:[^@\/\n]+@)?)(?:www\.)?([^:\/?\n]+)/)[3]   
+        return text.match(/(^(?:https?:\/\/)?)((?:[^@\/\n]+@)?)(?:www\.)?([^:\/?\n]+)/)[3]   
     }
     catch {
         return false  
