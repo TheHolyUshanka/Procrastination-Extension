@@ -2,11 +2,12 @@
 
 
 
-// Create a div element for the white box
+// Create elements
 const whiteBox = document.createElement("div");
+const textNode = document.createTextNode("Hello, World!");
 
-// Set the white box's styles
-whiteBox.style.cursor = "move"; // Set cursor style to indicate draggable
+//create styles
+whiteBox.style.cursor = "move";
 whiteBox.style.position = "fixed";
 whiteBox.style.bottom = "64px";
 whiteBox.style.right = "64px";
@@ -14,47 +15,39 @@ whiteBox.style.width = "300px";
 whiteBox.style.height = "150px";
 whiteBox.style.backgroundColor = "white";
 whiteBox.style.border = "1px solid #000";
-whiteBox.style.zIndex = 999
+whiteBox.style.zIndex = "9999";
 
-
-// Create a text node with "Hello, World!"
-const textNode = document.createTextNode("Hello, World!");
-
-// Append the text node to the white box
+//append to page
 whiteBox.appendChild(textNode);
-
-// Append the white box to the body of the page
 document.body.appendChild(whiteBox);
 
 let isDragging = false;
-let offsetX, offsetY;
+let offsetX;
+let offsetY;
 
-// Mouse down event to start dragging
+//start dragging
 whiteBox.addEventListener("mousedown", function(e) {
-    isDragging = true;
+  isDragging = true;
+  whiteBox.style.zIndex = "9999";
   
-    // Calculate the offset between the mouse position and the top-left corner of the box
-    offsetX = e.clientX - whiteBox.getBoundingClientRect().left;
-    offsetY = e.clientY - whiteBox.getBoundingClientRect().top;
+  // Calculate the offset between the mouse position and the top-left corner of the box
+  offsetX = e.clientX - whiteBox.getBoundingClientRect().left;
+  offsetY = e.clientY - whiteBox.getBoundingClientRect().top;
   
-    // Set a high z-index to bring the box to the front
-    whiteBox.style.zIndex = "9999"; // You can adjust this value as needed
+  // Prevent default browser behavior for drag-and-drop
+  e.preventDefault();
+});
   
-    // Prevent default browser behavior for drag-and-drop
-    e.preventDefault();
-  });
-  
-  // Mouse up event to stop dragging
-  document.addEventListener("mouseup", function() {
-    isDragging = false;
-  
-    // Restore the z-index to its original value
-    //whiteBox.style.zIndex = "auto";
-  });
+//stop dragging
+document.addEventListener("mouseup", function() {
+  isDragging = false;
+  //whiteBox.style.zIndex = "auto";
+});
 
-// Mouse move event to update box position while dragging
+//dragging
 document.addEventListener("mousemove", function(e) {
   if (isDragging) {
+    //calculate new position from mouse position in chrome - mouse position in box 
     const newX = e.clientX - offsetX;
     const newY = e.clientY - offsetY;
 

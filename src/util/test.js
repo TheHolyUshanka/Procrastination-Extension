@@ -106,14 +106,21 @@ export const redirectToUrlFromPopup = async(redirectURL) => {
 }
 
 export const sendMessageToBackground = (text) => {
+    console.log("Popup sending: " + text + " to server.")
     chrome.runtime.sendMessage({ message: text })
+}
+
+export const sendMessageToBackgroundAndReturn = async (text) => {
+    console.log("Popup sending: " + text + " to server for response.")
+    const  response  = await chrome.runtime.sendMessage({ message: text })
+    console.log(response.response)
+    return response.response;
 }
 
 export const setTimeListner = (setter) => {
     chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         if (request.message=== "Timer Value") {
             setter(request.timer)
-            console.log(request.timer)
         }
       });
 }

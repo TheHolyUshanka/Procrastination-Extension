@@ -1,20 +1,41 @@
 /* global chrome */
 
 let CurrentTimer = 0
-let Running = false
 let timerState = "none"
 var intervalId
 
+// When installed, show settings page
+chrome.runtime.onInstalled.addListener(function (details) {
+    if (details.reason === "install") {
+        chrome.storage.local.set({ "procrastination": [], "productivity": [] });
+    }
+});
 
 
+//https://developer.chrome.com/docs/extensions/mv3/messaging/
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     switch (request.message) {
-        case "Start Pomodoro":
-        console.log("Do Start Pomodoro");
-        startPomodoro(25*60)
-          break;
+        case "start pomodoro":
+            console.log("Do Start Pomodoro");
+            startPomodoro(25*60)
+            break;
+        case "get state":
+            sendResponse({response: timerState});
+            break;
+        case "get time":
+            sendResponse({response: timeFormatter(CurrentTimer)});
+            break;
+        case "get is current tab":
+            sendResponse({response: isCurrentUrlInLists()});
+            break;
+        case "pause":
+            timerState==="pause"? resume() : pause();
+            break;
+        case "resume":
+            resume()
+            break;
         default:
-          console.log("welp");
+            console.log("..." + request.message + "...");
       }
   });
 
@@ -22,37 +43,47 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
 function startPomodoro(time) {
     console.log(timerState)
-    if (timerState === "none") {
+    if (timerState === "none" || timerState === "break") {
         CurrentTimer = time
         timerState = "pomodoro"
         intervalId = setInterval(runTime, 1000)
-        return true
-    }
-    else {
-        return false
     }
 };
 
 function startBreak(time) {
-    if (timerState !== "pomodoro") {
+    if (timerState === "pomodoro") {
         CurrentTimer = time
         timerState = "break"
         intervalId = setInterval(runTime, 1000)
-        return true
     }
-    else {
-        return false
+};
+
+function pause() {
+    if (timerState === "pomodoro") {
+        timerState = "pause"
+        clearInterval(intervalId);
+    }
+};
+
+function resume() {
+    if (timerState === "pause") {
+        timerState = "pomodoro"
+        intervalId = setInterval(runTime, 1000)
     }
 };
 
 async function runTime() {
     CurrentTimer--
-    console.log(Math.floor(CurrentTimer/60) +":"+CurrentTimer%60 + await getCurrentTab().url)
     chrome.runtime.sendMessage({ message: "Timer Value", timer: timeFormatter(CurrentTimer) });
 
-    if(CurrentTimer <= 0) {
+    if(CurrentTimer <= 0) { //check if done
         clearInterval(intervalId);
+
+        if (timerState === "pomodoro") {startBreak(5*25)}
+        else {timerState = "none"}
     }
+
+    console.log(Math.floor(CurrentTimer/60) +":"+CurrentTimer%60)
     //let tmp = await isCurrentUrlInList("procrastination")
     //console.log(tmp)
 };
@@ -101,6 +132,19 @@ const isCurrentUrlInList = (key) => {
             resolve(tmp);
       });
     });
+}
+
+const isCurrentUrlInLists = async () => {
+    let tmp = await isCurrentUrlInList("procrastination")
+
+    if(tmp) {
+        return tmp
+    }
+    else {
+        tmp = isCurrentUrlInList("productivity")
+    }
+
+    return tmp;
 }
 
   chrome.tabs.onActivated.addListener(async (activeInfo) => {
