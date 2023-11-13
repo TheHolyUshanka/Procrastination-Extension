@@ -79,7 +79,7 @@ async function runTime() {
     if(CurrentTimer <= 0) { //check if done
         clearInterval(intervalId);
 
-        if (timerState === "pomodoro") {startBreak(5*25)}
+        if (timerState === "pomodoro") {startBreak(5*60)}
         else {timerState = "none"}
     }
 
@@ -90,7 +90,14 @@ async function runTime() {
 
 
 function timeFormatter(time) {
-    return Math.floor(time/60) +":"+time%60
+    //return Math.floor(time/60) +":"+time%60
+
+    let min = Math.floor(time/60)
+    if(min < 10) {min = "0"+min}
+    let sec = time%60
+    if(sec < 10) {sec = "0"+sec}
+
+    return min + ":" + sec
 }
 
 
@@ -109,7 +116,6 @@ async function getCurrentTab() {
 }
 
 async function sendMessageToCurrentContentScript(message) {
-
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         chrome.tabs.sendMessage(tabs[0].id, { message: message });
       });
