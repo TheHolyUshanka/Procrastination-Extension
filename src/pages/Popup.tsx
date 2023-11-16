@@ -6,12 +6,11 @@ import { redirectToUrlFromPopup, addCurentToList, isCurrentUrlInList, getList, s
 
 
 function Popup() {
+  console.log("content")
   const [isProductivity, setIsProductivity] = useState(false);
   const [isProcrastination, setIsProcrastination] = useState(false);
   const [listOfProductivity, setListOfProductivity] = useState([]);
   const [timer, setTimer] = useState("25:00");
-
-
 
 
   useEffect(() => {

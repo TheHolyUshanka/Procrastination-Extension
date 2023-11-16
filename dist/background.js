@@ -1,4 +1,5 @@
 /* global chrome */
+console.log("background")
 
 let CurrentTimer = 0
 let timerState = "none"
@@ -13,7 +14,10 @@ chrome.runtime.onInstalled.addListener(function (details) {
 
 
 //https://developer.chrome.com/docs/extensions/mv3/messaging/
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(async function(request, sender, sendResponse) {
+    console.log("background got message:")
+    console.log(request)
+    
     switch (request.message) {
         case "start pomodoro":
             console.log("Do Start Pomodoro");
@@ -33,6 +37,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             break;
         case "resume":
             resume()
+            break;
+        case "giveStateForContent":
+            isCurrentUrlInList("procrastination").then(i => {
+            if(i) {sendResponse({response: "procrastinating"});}
+            else {sendResponse({response: "something"});}
+            })
             break;
         default:
             console.log("..." + request.message + "...");
@@ -116,9 +126,13 @@ async function getCurrentTab() {
 }
 
 async function sendMessageToCurrentContentScript(message) {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, { message: message });
-      });
+    try {
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            chrome.tabs.sendMessage(tabs[0].id, { message: message });
+        });
+    } catch (error) {
+        console.log("damn")
+    }
   }
 
 
@@ -157,8 +171,8 @@ const isCurrentUrlInLists = async () => {
     console.log("onActivated")
     let tmp = await isCurrentUrlInList("procrastination")
     if (tmp) {
-        console.log("sending")
-        sendMessageToCurrentContentScript("Procrastinating")
+        //console.log("sending")
+        //sendMessageToCurrentContentScript("addContent")
     }
   });
 
@@ -166,7 +180,10 @@ const isCurrentUrlInLists = async () => {
     console.log("onUpdated")
     let tmp = await isCurrentUrlInList("procrastination")
     if (tmp) {
-        console.log("sending")
-        sendMessageToCurrentContentScript("Procrastinating")
+        sendMessageToCurrentContentScript("procrastinating") 
+    }
+    else {
+        sendMessageToCurrentContentScript("not") 
     }
   });
+

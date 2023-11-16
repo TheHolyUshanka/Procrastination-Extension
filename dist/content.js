@@ -1,5 +1,6 @@
 /* global chrome */
-
+import React from 'react';
+console.log("content")
 
 
 // Create elements
@@ -18,12 +19,11 @@ whiteBox.style.border = "1px solid #000";
 whiteBox.style.zIndex = "9999";
 
 //append to page
-whiteBox.appendChild(textNode);
-document.body.appendChild(whiteBox);
 
 let isDragging = false;
 let offsetX;
 let offsetY;
+
 
 //start dragging
 whiteBox.addEventListener("mousedown", function(e) {
@@ -56,3 +56,23 @@ document.addEventListener("mousemove", function(e) {
     whiteBox.style.top = newY + "px";
   }
 });
+
+
+
+//https://developer.chrome.com/docs/extensions/mv3/messaging/
+(async () => {
+  const response = await chrome.runtime.sendMessage({message: "giveStateForContent"});
+  console.log(response);
+})();
+
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    if (request.message === "procrastinating") {
+      whiteBox.appendChild(textNode);
+      document.body.appendChild(whiteBox);
+    }
+    else if (request.type === "timerInfo") {
+      console.log("content got " + request.response)
+    }
+  }
+);
