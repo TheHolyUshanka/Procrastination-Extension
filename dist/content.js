@@ -1,5 +1,4 @@
 /* global chrome */
-import React from 'react';
 console.log("content")
 
 
@@ -71,8 +70,9 @@ chrome.runtime.onMessage.addListener(
       whiteBox.appendChild(textNode);
       document.body.appendChild(whiteBox);
     }
-    else if (request.type === "timerInfo") {
+    else {
       console.log("content got " + request.response)
+      //document.body.appendChild(whiteBox);
     }
   }
 );
