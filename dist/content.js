@@ -70,9 +70,12 @@ chrome.runtime.onMessage.addListener(
       whiteBox.appendChild(textNode);
       document.body.appendChild(whiteBox);
     }
-    else {
+    else if (request.message === "Timer Value") {
       console.log("content got " + request.response)
       //document.body.appendChild(whiteBox);
+    }
+    else {
+      console.log("content got " + request.response)
     }
   }
 );

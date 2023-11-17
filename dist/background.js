@@ -5,23 +5,22 @@ let CurrentTimer = 0
 let timerState = "none"
 var intervalId
 
-// When installed, show settings page
+// When installed setup local storage
 chrome.runtime.onInstalled.addListener(function (details) {
     if (details.reason === "install") {
         chrome.storage.local.set({ "procrastination": [], "productivity": [] });
     }
 });
 
-
 //https://developer.chrome.com/docs/extensions/mv3/messaging/
 chrome.runtime.onMessage.addListener(async function(request, sender, sendResponse) {
-    console.log("background got message:")
+    console.log("background got message: ")
     console.log(request)
     
     switch (request.message) {
         case "start pomodoro":
             console.log("Do Start Pomodoro");
-            startPomodoro(25*60)
+            startPomodoro(25)
             break;
         case "get state":
             sendResponse({response: timerState});
@@ -56,6 +55,7 @@ function startPomodoro(time) {
     if (timerState === "none" || timerState === "break") {
         CurrentTimer = time
         timerState = "pomodoro"
+        chrome.runtime.sendMessage({ message: "Timer State", state: timerState })
         intervalId = setInterval(runTime, 1000)
     }
 };
@@ -64,6 +64,7 @@ function startBreak(time) {
     if (timerState === "pomodoro") {
         CurrentTimer = time
         timerState = "break"
+        chrome.runtime.sendMessage({ message: "Timer State", state: timerState })
         intervalId = setInterval(runTime, 1000)
     }
 };
@@ -71,6 +72,7 @@ function startBreak(time) {
 function pause() {
     if (timerState === "pomodoro") {
         timerState = "pause"
+        chrome.runtime.sendMessage({ message: "Timer State", state: timerState })
         clearInterval(intervalId);
     }
 };
@@ -78,6 +80,7 @@ function pause() {
 function resume() {
     if (timerState === "pause") {
         timerState = "pomodoro"
+        chrome.runtime.sendMessage({ message: "Timer State", state: timerState })
         intervalId = setInterval(runTime, 1000)
     }
 };
@@ -89,19 +92,20 @@ async function runTime() {
     if(CurrentTimer <= 0) { //check if done
         clearInterval(intervalId);
 
-        if (timerState === "pomodoro") {startBreak(5*60)}
-        else {timerState = "none"}
+        if (timerState === "pomodoro") {
+            startBreak(5)
+        }
+        else {
+            timerState = "none"
+            chrome.runtime.sendMessage({ message: "Timer State", state: timerState })
+        }
     }
-
     console.log(Math.floor(CurrentTimer/60) +":"+CurrentTimer%60)
-    //let tmp = await isCurrentUrlInList("procrastination")
-    //console.log(tmp)
 };
 
 
 function timeFormatter(time) {
     //return Math.floor(time/60) +":"+time%60
-
     let min = Math.floor(time/60)
     if(min < 10) {min = "0"+min}
     let sec = time%60
@@ -110,17 +114,14 @@ function timeFormatter(time) {
     return min + ":" + sec
 }
 
-
-
 //https://developer.chrome.com/docs/extensions/reference/tabs/
 async function getCurrentTab() {
-    let queryOptions = { active: true, lastFocusedWindow: true };
-    let [tab] = await chrome.tabs.query(queryOptions);
-
     try {
+        let queryOptions = { active: true, lastFocusedWindow: true };
+        let [tab] = await chrome.tabs.query(queryOptions);
         return tab.url.match(/(^(?:https?:\/\/)?)((?:[^@\/\n]+@)?)(?:www\.)?([^:\/?\n]+)/)[3]   
     }
-    catch {
+    catch (error) {
         return false  
     }
 }
@@ -134,7 +135,6 @@ async function sendMessageToCurrentContentScript(message) {
         console.log("damn")
     }
   }
-
 
 const isCurrentUrlInList = (key) => {
     return new Promise(async (resolve) => {
@@ -163,27 +163,19 @@ const isCurrentUrlInLists = async () => {
     else {
         tmp = isCurrentUrlInList("productivity")
     }
-
     return tmp;
 }
-
-  chrome.tabs.onActivated.addListener(async (activeInfo) => {
-    console.log("onActivated")
-    let tmp = await isCurrentUrlInList("procrastination")
-    if (tmp) {
-        //console.log("sending")
-        //sendMessageToCurrentContentScript("addContent")
-    }
-  });
 
   chrome.tabs.onUpdated.addListener(async (activeInfo) => {
     console.log("onUpdated")
     let tmp = await isCurrentUrlInList("procrastination")
-    if (tmp) {
-        sendMessageToCurrentContentScript("procrastinating") 
-    }
-    else {
-        sendMessageToCurrentContentScript("not") 
+    
+    if (tmp !== undefined) {
+        if (tmp) {
+            sendMessageToCurrentContentScript("procrastinating") 
+        }
+        else {
+            sendMessageToCurrentContentScript("not") 
+        }
     }
   });
-

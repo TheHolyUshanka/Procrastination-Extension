@@ -6,7 +6,6 @@ export const addCurentToList = async (key, setter) => {
     let url = formatUrl(tab.url)
     console.log(url)
 
-
     chrome.storage.local.get(key, function(List){
         if (typeof List[key] === 'undefined') { //if list does not exist
             chrome.storage.local.set({ [key]: [url] }); //create with current tab
@@ -24,7 +23,6 @@ export const addCurentToList = async (key, setter) => {
                 chrome.storage.local.set({ [key]: tmp });
                 setter(true)
             }
-            //alert(tmp)
         }
     })
 };
@@ -45,7 +43,6 @@ export const isCurrentUrlInList = (key) => {
       });
     });
 }
-
 
 export const getList = (key) => {
     return new Promise(async (resolve) => {
@@ -73,26 +70,6 @@ function formatUrl(text) {
         return false  
     }
 }
-
-// chrome.webNavigation.onBeforeNavigate.addListener((details) => {
-//     if (details.url.includes("example.com")) {
-//       const redirectUrl = "https://new-website.com";
-//       chrome.webNavigation.onBeforeNavigate.removeListener(); // Remove the listener
-//       chrome.tabs.update(details.tabId, { url: redirectUrl });
-//     }
-//   });
-
-
-// function redirect(tab) {
-//     let params = new URLSearchParams();
-//     params.append('page', 'intercepted');
-//     params.append('url', tab.url);
-
-//     let extensionUrl = chrome.runtime.getURL('index.html');
-//     let url = `${extensionUrl}?${params.toString()}`;
-
-//     chrome.tabs.update(tab.id, { url });
-// }
 
 export const redirectToURL = async(redirectURL) => {
     //let id = await getCurrentTab().id
@@ -125,4 +102,10 @@ export const setTimeListner = (setter) => {
       });
 }
 
-//({ message: "Timer Value", timer: CurrentTimer });
+export const setTimerStateListner = (setter) => {
+    chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+        if (request.message=== "Timer State") {
+            setter(request.state)
+        }
+      });
+}

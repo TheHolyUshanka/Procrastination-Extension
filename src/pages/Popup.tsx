@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import "./popup.css"
-import { redirectToUrlFromPopup, addCurentToList, isCurrentUrlInList, getList, sendMessageToBackground, setTimeListner, sendMessageToBackgroundAndReturn } from "../util/test"
+import { setTimerStateListner, redirectToUrlFromPopup, addCurentToList, isCurrentUrlInList, getList, sendMessageToBackground, setTimeListner, sendMessageToBackgroundAndReturn } from "../util/test"
 
 
+function convertStateToColor(state: string) {
+  if(state === "pomodoro") {return "red"}
+  else if(state === "break") {return "green"}
+  else {return "black"}
+}
 
 
 function Popup() {
@@ -11,6 +16,12 @@ function Popup() {
   const [isProcrastination, setIsProcrastination] = useState(false);
   const [listOfProductivity, setListOfProductivity] = useState([]);
   const [timer, setTimer] = useState("25:00");
+  const [timerState, setTimerState] = useState("none");
+  const stateColoring = {"pomodoro":"red", "break":"green", "pause":"black", "none":"black", "default": "black"}
+
+  let color: string = "black"
+  if (timerState === "pomodoro") {color = "red"}
+  else if (timerState === "break") {color = "green"}
 
 
   useEffect(() => {
@@ -19,6 +30,7 @@ function Popup() {
       setIsProcrastination(await isCurrentUrlInList("procrastination"));
       setListOfProductivity(await getList("productivity"))
       setTimer(await sendMessageToBackgroundAndReturn("get time"))
+      setTimerState(await sendMessageToBackgroundAndReturn("get state"))
     };
     fetchData();
   }, [isProductivity, isProcrastination]);
@@ -26,6 +38,7 @@ function Popup() {
   useEffect(() => {
     const fetchData = async () => {
       setTimeListner(setTimer)
+      setTimerStateListner(setTimerState)
     };
     fetchData();
   }, []);
@@ -52,7 +65,7 @@ function Popup() {
   if (isProductivity) {
     return (
       <div>
-          <h1 onClick={() => sendMessageToBackground("pause")}>{timer}</h1>
+          <h1 style={{color: convertStateToColor(timerState)}} onClick={() => sendMessageToBackground("pause")}>{timerState + ": " + timer}</h1>
           <button className='ProductivityButton' onClick={() => addCurentToList("productivity", setIsProductivity)}>Remove Productivity</button>
           <ul>
             {listHTML}
