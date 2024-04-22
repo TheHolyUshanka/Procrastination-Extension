@@ -4,11 +4,11 @@ import Popup from "./pages/Popup"
 
 
 const root = document.createElement("div")
-root.className = "container"
+root.style.width = "100%"
+root.style.height = "100%"
+root.style.padding = "0px"
 document.body.appendChild(root)
 const rootDiv = ReactDOM.createRoot(root);
 rootDiv.render(
-  <React.StrictMode>
-    <Popup />
-  </React.StrictMode>
+  <Popup/>
 );

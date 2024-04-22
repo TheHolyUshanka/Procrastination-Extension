@@ -3,6 +3,16 @@
     height: fit-content;
   }
 
+.topContainer {
+  margin: 4px;
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.botContainer {
+  margin: 4px;
+}
 
 .ProductivityButton {
     background-color: green;
@@ -14,4 +24,166 @@
 
 ul {
     list-style-type: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    overflow: auto;
+    max-height: 300px;
+    max-width: 250px;
   }
+
+.itemContainer{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 91%;
+  align-items: center;
+  padding-left: 4%;
+  padding-right: 5%;
+  gap: 8px;
+  cursor: pointer;
+  margin-top: 12px;
+  margin-bottom: 0px;
+}
+
+
+
+ul, li {
+  padding: 0;
+  margin: 0;
+}
+
+body{
+  margin:0px !important;
+  display: flex;
+}
+
+
+.topButton{
+  width: 75%;
+  height: 80%;
+}
+
+.radioButtons{
+  display: inline-flex;
+  overflow: hidden;
+  border-radius: 25px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.25);
+  width: 92%;
+  margin: 0 4%;
+}
+
+.radioInput{
+  display: none;
+}
+
+.radioLabel {
+  padding: 6px 6px;
+  font-size: 12px;
+  font-family: sans-serif;
+  color: white;
+  background: #009578;
+  cursor: pointer;
+  text-align: center;
+}
+
+.radioLabel:not(:first-of-type) {
+  border-left: 1px solid #006b56
+}
+
+.radioInput:checked + .radioLabel{
+  background: #006b56;
+}
+
+
+.PomodoroButton .StatsButton{
+  width: "92px";
+  height: "37px";
+  border-radius: "16px";
+  font-size: "20px";
+  font-family: "arial black";
+}
+
+.TaskInputContainer {
+  display: flex;
+  flex-direction: row;
+  margin: 8px;
+  flex-wrap: nowrap;
+}
+
+.taskInputButton {
+  width: 25%;
+}
+
+.taskInputField{
+  width: 75%;
+}
+
+.taskContainer{
+  display: flex;
+  flex-direction: row;
+  width: 94%;
+  align-items: center;
+  padding-left: 3%;
+  padding-right: 3%;
+  gap: 2px;
+  cursor: pointer;
+  margin-top: 6px;
+  margin-bottom: 12px;
+}
+
+ul > div:first-of-type {
+  margin-top: 12px;
+}
+
+.taskCheckbox{
+  cursor: pointer;
+}
+
+.backButton {
+  font-size: 12vh;
+  height: fit-content;
+  display: inline-block;
+  color: black;
+  background-color: transparent;
+  line-height: 1vh;
+  margin-top: 3vh;
+
+  cursor: pointer;
+  border: none;
+  align-self: flex-start;
+}
+
+.breakSlider{
+  margin-top: -1vh;
+}
+
+.slider {
+  width: 90%;
+  margin-bottom: 3vh;
+}
+
+.settingsContainer {
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+}
+
+.settingsContainer h3 {
+  line-height: 1px;
+}
+
+.settingsApplyButton {
+  margin-top: 4vh;
+
+  width: 22vh;
+  height: 9vh;
+  border-radius: 3vh;
+  font-size: 5vh;
+  font-family: "arial";
+  color: white;
+  cursor: pointer;
+  background-color:limegreen;
+  border-style: solid;
+}
