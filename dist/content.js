@@ -1,7 +1,7 @@
 /* global chrome */
 console.log("content")
 
-//Field
+//fields
 let pomodoroState = "none";
 let prePomodoroState = pomodoroState
 let procrastinating = false
@@ -19,22 +19,39 @@ let timeContainer = document.createElement("div");
 let pomodoroContainer = document.createElement("div");
 var t_container = document.createElement("ul");
 
-//https://developer.chrome.com/docs/extensions/mv3/messaging/
-//ask for information at start of execution
+//css animation (shake/zoom) 3 times
+const shakeFrames = `
+  @keyframes shake {
+    0% { transform: rotate(0deg) scale(1.0);}
+
+    10% { transform: rotate(8deg) scale(1.1);}
+    20% { transform: rotate(0eg) scale(1.4);}
+    30% { transform: rotate(-8deg) scale(1.1);}
+
+    40% { transform: rotate(8deg) scale(1.1);}
+    50% { transform: rotate(0eg) scale(1.4);}
+    60% { transform: rotate(-8deg) scale(1.1);}
+
+    70% { transform: rotate(8deg) scale(1.1);}
+    80% { transform: rotate(0eg) scale(1.4);}
+    90% { transform: rotate(-8deg) scale(1.1);}
+
+    100% { transform: rotate(0deg) scale(1.0);}
+  }`;
+const styleSheet = document.createElement("style");
+styleSheet.type = "text/css";
+styleSheet.innerText = shakeFrames;
+document.head.appendChild(styleSheet);
+
+//Ask background if site is procrastination or productivity, and get state for pomodoro
+//This will send a message back later to content script later to act on.
 (async () => {
-  //get whether or not current is procrastination or productivity
   chrome.runtime.sendMessage({message: "giveStateForContent"});
-  //get the current state of pomodoro
   chrome.runtime.sendMessage({message: "get state"});
 })();
 
-//Message handeling
-//https://developer.chrome.com/docs/extensions/mv3/messaging/
-
+//Message handeling  (https://developer.chrome.com/docs/extensions/mv3/messaging/)
 chrome.runtime.onMessage.addListener(async function(request, sender, sendResponse) {
-  console.log("background got message: ")
-  console.log(request)
-  
   switch (request.message) {
     case "procrastinating": //user on a procrastination website
       pomodoroState = request.text.state
@@ -56,14 +73,14 @@ chrome.runtime.onMessage.addListener(async function(request, sender, sendRespons
         createBox()
       }
       break
-    case "not": //website is neither
+    case "not": //website is neither procrastination or productivity
       pomodoroState = request.text.state
       prePomodoroState = request.text.pre
       if (pomodoroState === "pomodoro" ||  pomodoroState === "break") {
         createBox();
       }
       break
-    case "New State": //new state from background without having to check procrastination again
+    case "New State": //new state from background without having to check procrastination again (fx user clicked start button)
       pomodoroState = request.text.state
       prePomodoroState = request.text.pre
       if (procrastinating && pomodoroState === "pomodoro") {
@@ -73,18 +90,17 @@ chrome.runtime.onMessage.addListener(async function(request, sender, sendRespons
       else {
         unblock()
         if (pomodoroState === "pomodoro" ||  pomodoroState === "break" || procrastinating) {
-          createBox();
+          createBox(); //keep box on screen during pomodoro or break regardless of site
         }
       }
       break
-    case "procrastinationTime":
+    case "procrastinationTime": //update pomodoro time display
       timeTextT.textContent = Math.floor(request.text/60) + " min. today"
       break
-    case "Timer Value":
+    case "Timer Value": //update pomodoro time on button
       updateTimer(request.text)
       break;
-    case "openedPopup":
-      console.log("fuck")
+    case "openedPopup": //user opened popup window, show box if it is minimized.
       if (minimized) {minimize()}
       break
     case "completePomodoro":
@@ -102,35 +118,31 @@ chrome.runtime.onMessage.addListener(async function(request, sender, sendRespons
     case "Update Tasks":
       updateTasks();
       break
+    case "shake":
+      shakeBox(3);
+      break
     default:
-      console.log("content got message:");
-      console.log(request.text);
+      //console.log("content script got message:");
+      //console.log(request.text);
   }
 });
 
 
-
 function updateTimer(time) {
-  //const tmp = textNode.nodeValue.split(":");
-  //let num = parseInt(tmp[0]*60) + parseInt(tmp[1]) - 1
   textNode.textContent = time
   timerTextBlock.textContent = time
   timerButton.textContent = time
 }
 
-function timeFormatter(time) {
-  let min = Math.floor(time/60)
-  if(min < 10) {min = "0"+min}
-  let sec = time%60
-  if(sec < 10) {sec = "0"+sec}
-  return min + ":" + sec
-}
-
+//create full screen block
 var IsBlocked = false;
 let listOfTasks;
+
 async function createBlock() {
-  let procrastination = await chrome.storage.local.get(["procrastination"])
-  procrastination = procrastination.procrastination
+  //Get data from local storage to display on screen
+
+  // let procrastination = await chrome.storage.local.get(["procrastination"])
+  // procrastination = procrastination.procrastination
 
   let productivity = await chrome.storage.local.get(["productivity"])
   productivity = productivity.productivity
@@ -138,43 +150,50 @@ async function createBlock() {
   listOfTasks = await chrome.storage.local.get(["listOfTasks"])
   listOfTasks = listOfTasks.listOfTasks
 
+
   //main container
   var mainContainer = document.createElement("div");
   mainContainer.setAttribute("id", "AikiBlockContent");
   mainContainer.setAttribute("style", "all: initial; height: 100vh; background-color: #26262b; display: flex; justify-content: center; flex-direction: column; align-items: center");
 
+
   //title
   let h1 = document.createElement("h1");
+  h1.setAttribute("style", "color: white; font-family: Arial; font-size: 5vh; font-weight: bold;");
   let title = document.createTextNode("Blocked during Pomodoro");
-  h1.setAttribute("style", "all: initial;  color: white; font-family: Arial; font-size: 9vh; margin-bottom: 4vh");
   h1.appendChild(title);
   mainContainer.appendChild(h1);
+  
 
-  //list container
+  //outer list container (row)
   var l_container = document.createElement("div");
   l_container.setAttribute("style", "all: initial; display: flex; flex-direction: row; column-gap: 6vh;");
+
 
   //productivity container
   var p_container = document.createElement("ul");
   p_container.setAttribute("id", "ProductivityContainer");
-  for (let i = 0; i < productivity.length; i++) {
+
+
+  //Create element for each productivity site in local storage
+  for (let i = 0; i < productivity.length; i++) { 
     let li = document.createElement("div");
     li.setAttribute("style", "all: initial; cursor: pointer; color: white; font-family: Arial; font-size: 3vh; display: flex; flex-direction: row; align-items: center; gap: 1.6vh; margin: 3vh 0;");
 
+    //icon
     let img = document.createElement("img")
     img.setAttribute("src", productivity[i].icon)
     img.setAttribute("style", "all: initial; cursor: pointer; height: 2vh;")
     li.appendChild(img)
 
+    //name of productivity site
     li.appendChild(document.createTextNode(productivity[i].url));
     li.onclick = (() => window.open("https://" + productivity[i].url, "_blank"))
     
-
-
-
     p_container.appendChild(li)
   }
   l_container.appendChild(p_container);
+
 
   //task container
   t_container.setAttribute("id", "ProductivityContainer");
@@ -187,6 +206,7 @@ async function createBlock() {
 
 
   //timer button
+
   if (!pomodoroState === "none") {
     const time = await chrome.runtime.sendMessage({message: "get time"})
     timerButton.textContent = time
@@ -196,9 +216,9 @@ async function createBlock() {
   button.onclick = (() => chrome.runtime.sendMessage({ message: "pomodoro" }))
   button.setAttribute("style", "all: initial; margin-top: 3vh; font-weight: bold; font-family: arial black; font-size: 7vh; width: 25vh; height: 10.5vh; border-radius: 4.5vh; color: black; background-color: red; border; border: 0.6vh solid black; cursor: pointer; font-family: calibri; text-align: center;")
   button.appendChild(timerTextBlock)
-
   mainContainer.appendChild(button);
   
+
   document.body.appendChild(mainContainer);
 }
 
@@ -210,7 +230,7 @@ function removeBlock() {
 }
 
 var items
-async function block() {//hide all elements on page
+async function block() {//hide all elements on page before creating block
   if (!IsBlocked) {
     IsBlocked = true;
     items = document.querySelectorAll("body > *:not(script):not([style*='display:none'])");
@@ -221,7 +241,7 @@ async function block() {//hide all elements on page
   }
 }
 
-function unblock() {//unhide all elements on page
+function unblock() {//unhide all elements on page before removing block
   if (IsBlocked) {
     IsBlocked = false;
     if (items !== undefined) {
@@ -239,6 +259,9 @@ function unblock() {//unhide all elements on page
   }
 }
 
+
+
+//Create pomodoro box
 const minimizeButtonDiv = document.createElement("div")
 const minimizeButton = document.createElement("button")
 const timeTextC = document.createElement("p")
@@ -248,35 +271,37 @@ const icon2 = document.createElement("img")
 
 async function createBox() {
 
-  //check if it is already present and settings time
+  //check if it is already present and within settings time (unless in pomodor or break state)
   if (document.getElementById("AikiBox") || (!await checkTime() && !pomodoroState === "pomodoro" && !pomodoroState === "break")) {
     return
   }
 
+  //fields
   let isDragging = false;
   let offsetX;
   let offsetY;
 
-
-  //create box
+  //create outer box
   AikiBox.id = "AikiBox"
-  AikiBox.setAttribute("style", "all: initial; cursor: move; position: fixed; bottom: 8vh; right: 8vh; width: 26vh; " +
+  AikiBox.setAttribute("style", "all: initial; cursor: move; position: fixed; bottom: 8vh; right: 8vh; width: 26vh; shake; " +
   "height: fit-content; z-index: 9999; background-color: white; border: 0.5vh solid green; border-radius: 1.8vh; " +
   "display: flex; flex-direction: column; align-items: center; box-sizing: border-box; box-shadow: inset 0 0 0.5vh black, 0 0 0.8vh 0.2vh black;")
   if (minimized) {AikiBox.style.display = "none"}
 
   //create minimize button
-  minimizeButtonDiv.setAttribute("style", "all: initial; min-height: 0.4vh; max-height: 0.4vh; min-width: 3.6vh; max-width: 3.6vh; " + 
-  "cursor: pointer; align-self: flex-end; padding: 0.75vh; box-sizing: border-box;")
+  minimizeButtonDiv.setAttribute("style", "all: initial; min-height: 0.4vh; max-height: 0.4vh; min-width: 3.6vh; " + 
+  "max-width: 3.6vh; cursor: pointer; align-self: flex-end; padding: 0.75vh; box-sizing: border-box;")
   minimizeButtonDiv.onclick = (() => minimize())
+  //minimizeButtonDiv.onclick = (() => shakeBox(3))
 
   minimizeButton.textContent = ""
-  minimizeButton.setAttribute("style", "all: initial; background-color:	#505050; height: 0.3vh; width: 100%; border-radius: 0.3vh; " + 
-  "cursor: pointer; border: none; box-sizing: border-box; display: flex;")
+  minimizeButton.setAttribute("style", "all: initial; background-color:	#505050; height: 0.3vh; " + 
+  "width: 100%; border-radius: 0.3vh; cursor: pointer; border: none; box-sizing: border-box; display: flex;")
   minimizeButtonDiv.appendChild(minimizeButton)
+
   AikiBox.appendChild(minimizeButtonDiv)
 
-  //create procrastination time if procrastination
+  //show procrastination time if on procrastinaton site
   if (procrastinating) {
     //get data from local storage
     let timeProcrast = await chrome.storage.local.get(["procrastination"])
@@ -285,17 +310,18 @@ async function createBox() {
 
     timeContainer.setAttribute("style", "all: initial; cursor: move; display:flex; flex-direction:row; align-items: center; margin-bottom: 0.25vh; margin-top: -0.5vh")
 
-    //create image
+    //add icon left of text
     icon.src = timeProcrast["icon"]
     icon.setAttribute("style", "all: initial; cursor: move; width: 1.75vh;")
     timeContainer.appendChild(icon)
 
-    //timeTextT = document.createTextNode(Math.floor(timeProcrast["today"]/60) + " min. today")
+    //creaye procrastination text from data
     timeTextT.textContent = Math.floor(timeProcrast["today"]/60) + " min. today"
     timeTextC.setAttribute("style", "all: initial; cursor: move; color: black; font-size: 2vh; margin-left: 0.75vh; margin-right: 0.75vh; font-family: Trebuchet MS; font-weight: bold")
     timeTextC.appendChild(timeTextT)
     timeContainer.appendChild(timeTextC)
 
+    //add icon right of text
     icon2.src = timeProcrast["icon"]
     icon2.setAttribute("style", "all: initial; cursor: move; width: 1.75vh;")
     timeContainer.appendChild(icon2)
@@ -326,7 +352,6 @@ async function createBox() {
     offsetX = e.clientX - AikiBox.getBoundingClientRect().left;
     offsetY = e.clientY - AikiBox.getBoundingClientRect().top;
     
-    //Prevent default browser behavior for drag-and-drop
     e.preventDefault();
   });
   
@@ -343,7 +368,7 @@ async function createBox() {
       let newX = e.clientX - offsetX;
       let newY = e.clientY - offsetY;
 
-      //covert px to vh/vw
+      //convert px to vh/vw
       newX = (100 * newX / window.innerWidth)
       newY = (100 * newY / window.innerHeight)
 
@@ -353,7 +378,7 @@ async function createBox() {
     }
   });
 
-  updateBox()
+  updateBox() //update box based on pomodoro state
   document.body.appendChild(AikiBox);
 }
 
@@ -401,7 +426,6 @@ async function getPomodoroCount() {
 }
 
 function updateBox() {
-
   if (pomodoroState === "pomodoro" || (pomodoroState === "pause" && prePomodoroState === "pomodoro") ) {
     AikiBox.style.border = "0.5vh solid red"
     timerButton.style.backgroundColor = "red"
@@ -420,7 +444,7 @@ function completeTask(taskName) {
   chrome.runtime.sendMessage({message: "completeTask", text: taskName});
 }
 
-async function updateTasks() {
+async function updateTasks() { //update displayed lsit of tasks
   listOfTasks = await chrome.storage.local.get(["listOfTasks"])
   listOfTasks = listOfTasks.listOfTasks
 
@@ -441,3 +465,16 @@ async function updateTasks() {
     t_container.appendChild(li)
   }
 }
+
+function shakeBox (count) {
+  if (count > 0) {
+    AikiBox.style.animation = 'shake 1.0s';
+
+    //Remove the animation after it ends
+    AikiBox.addEventListener('animationend', () => {
+      AikiBox.style.animation = '';
+    }, { once: true });
+
+    setTimeout(() => shakeBox(count - 1), 2000)
+  }
+};

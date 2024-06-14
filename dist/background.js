@@ -1,5 +1,4 @@
 /* global chrome */
-console.log("background")
 
 //states
 let currentTimer = 0
@@ -8,14 +7,15 @@ let timerRunning = false
 let currentSiteState = "other"
 let prePauseState = timerState
 let pauseCount = 0
+let streakProcrast = 0
 
-var intervalId //for runTIme interval
+var intervalId //for runTime interval
 let convertDay = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
 
 let settings = {}
 updateSettings()
 
-//When installed setup local storage
+//When installed setup defualt local storage
 chrome.runtime.onInstalled.addListener(function (details) {
     if (details.reason === "install") {
         let id = Date.now();
@@ -81,10 +81,8 @@ chrome.runtime.onMessage.addListener(async function(request, sender, sendRespons
         case "settings":
             updateSettings()
             chrome.storage.local.get(["aikiData"]).then((result) => {
-                console.log(result.aikiData)
                 let tmp = result.aikiData
-                console.log(tmp.Pomodoros)
-                //sendData("Settings", result.aikiData)
+                //console.log(tmp)
                 sendData("Settings", tmp)
             });
             break
@@ -98,7 +96,9 @@ chrome.runtime.onMessage.addListener(async function(request, sender, sendRespons
             sendData(request.class, request.data)
             break
         case "completeTask":
-            updateTask(request.text)
+            let tmp = await updateTask(request.text, sendResponse)
+            // console.log(tmp)
+            sendResponse({response: tmp});
             break
         case "test":
             await newDayData()
@@ -151,8 +151,7 @@ function resume() {
 };
 
 async function runTime() {
-
-    if(currentTimer <= 0) { //check if done
+    if(currentTimer <= 0) { //check if timer is done
         clearInterval(intervalId);
 
         if (timerState === "pomodoro") { //finsih pomodoro
@@ -161,6 +160,7 @@ async function runTime() {
             chrome.runtime.sendMessage({ message: "Timer State", text: timerState })
             sendMessageToAllContentScripts("Timer Value", timeFormatter(currentTimer))
 
+            //update pomodoro counter
             chrome.storage.local.get("aikiData", function(List){
                 let tmp = List["aikiData"]
                 sendData("CompletePomodoro", {Count: tmp.Pomodoros, Pauses: pauseCount, Time: tmp.Pomodoro})
@@ -173,7 +173,7 @@ async function runTime() {
             sendMessageToAllContentScripts("completeBreak")
         }
     }
-    else { //else reduce timer and send message to all content and popup
+    else { //else reduce timer and send message to all content scripts and popup
         currentTimer--
         chrome.runtime.sendMessage({ message: "Timer Value", timer: timeFormatter(currentTimer) });
         sendMessageToAllContentScripts("Timer Value", timeFormatter(currentTimer))
@@ -220,12 +220,13 @@ async function sendMessageToAllContentScripts(identifier, text) {
     });
   }
 
+//get the list from local storage under the given name
 function getList(name) {
     chrome.storage.local.get([name])
         .then((result) => {
             console.log(result[name])
             return result[name]
-        });
+    });
 }
 
 //return whether or not the currently active 
@@ -241,24 +242,21 @@ const isCurrentUrlInList = (key) => {
                     tmp = true
                 }
             });
-
             resolve(tmp);
         });
     });
 }
 
-//return whether or not the currently active is in list
+//return if the list is in procrastination/productivity
 const isCurrentUrlInListsAndReturn = async() => {
     let tmp = await isCurrentUrlInList("procrastination")
     let tmpp = await isCurrentUrlInList("productivity")
-
     return [tmp, tmpp];
 }
 
 //returns whether or not the current active tab is productivity or procrastination
 const isCurrentUrlInLists = async () => {
     let tmp = await isCurrentUrlInList("procrastination")
-
     if(tmp) {
         return tmp
     }
@@ -267,22 +265,6 @@ const isCurrentUrlInLists = async () => {
     }
     return tmp;
 }
-
-//listen for change in the active tab to check for procrastination/productivity
-chrome.tabs.onUpdated.addListener(async (activeInfo) => {
-    console.log("onUpdated")
-    checkTab()
-});
-
-
-
-chrome.tabs.onActivated.addListener(async (activeInfo) => {
-    const tab = await chrome.tabs.get(activeInfo.tabId);
-    if (tab.active) { //check if the switched to tab is still active
-        console.log("onActivated")
-        checkTab()
-    }
-});
 
 async function checkTab() {
     let tmp = await isCurrentUrlInListsAndReturn()
@@ -332,12 +314,6 @@ function updateTime(localList, site) {
         }
         else if (Date["date"] !== today) { //reset if new day
             chrome.storage.local.set({ "date": today });
-            // diff = parseInt(today - Date["date"])
-            // //save from last day(s) to total
-            // for (let index = 0; index < Math.abs(diff); index++) {
-            //     newDay("procrastination", convertDay[(today - index) % 7])
-            //     newDay("productivity", convertDay[(today - index) % 7])
-            // }
             await newDayData()
             newDay("procrastination")
             newDay("productivity")
@@ -359,6 +335,14 @@ function updateTime(localList, site) {
                 //send message to update current content script timer
                 if (localList === "procrastination") {
                     sendMessageToCurrentContentScript("procrastinationTime", time)
+                    streakProcrast++
+                    if (streakProcrast >= 5*60) {
+                        streakProcrast = 0
+                        sendMessageToCurrentContentScript("shake")
+                    }
+                }
+                else {
+                    streakProcrast = 0
                 }
             }
             else {
@@ -489,27 +473,32 @@ function completePomodoro() {
     })
 }
 
-function updateTask(taskName) {
-    chrome.storage.local.get("listOfTasks", function(List){
+async function updateTask(taskName) {
+    await chrome.storage.local.get("listOfTasks", function(List){
         let tasks = List["listOfTasks"]
         let updated = []
+        let returnValue = false
+
         //loop over and create new updated list
         for (let i = 0; i < tasks.length; i++) {
             const element = tasks[i];
             if (element.name === taskName) {
                 let tmp = element
+                returnValue = !tmp.completed
                 tmp = {...tmp, completed: !tmp.completed}
                 updated.push(tmp)
-    
             }
             else {
                 updated.push(element)
             }
         }
         chrome.storage.local.set({ "listOfTasks": updated });
+
+        chrome.runtime.sendMessage({ message: "Update Tasks", text: taskName})
+        sendMessageToAllContentScripts("Update Tasks", taskName)
+
+        return returnValue;
     });
-    chrome.runtime.sendMessage({ message: "Update Tasks", text: taskName})
-    sendMessageToAllContentScripts("Update Tasks", taskName)
 }
 
 
@@ -539,3 +528,18 @@ async function newDayData() {
 }
 
 
+//----------------------LISTNERS------------------------------
+
+//listen for change in the active tab to check for procrastination/productivity
+chrome.tabs.onUpdated.addListener(async (activeInfo) => {
+    console.log("onUpdated")
+    checkTab()
+});
+
+chrome.tabs.onActivated.addListener(async (activeInfo) => {
+    const tab = await chrome.tabs.get(activeInfo.tabId);
+    if (tab.active) { //check if the switched to tab is still active
+        console.log("onActivated")
+        checkTab()
+    }
+});

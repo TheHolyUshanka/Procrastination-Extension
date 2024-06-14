@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { completeTask } from '../util/test';
+import { completeTask } from '../util/functions';
 
 export default function Task(task: any) {
     const [taskState, setTaskState] = useState(task.completed);
 
     return (
-        <div onClick={async () => { completeTask(task.name, setTaskState) }}>
+        <div onClick={async () => { completeTask(task.name); setTaskState(!taskState) }}>
             <div className='taskContainer'>
                 <input
                     className='taskCheckbox'

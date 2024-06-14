@@ -10,7 +10,7 @@ import { setTimerStateListner,
   addToTaskList,
   sendMessageToBackgroundAndReturn,
   setNewDayListnerForTask,
-  updateSettings } from "../util/test"
+  updateSettings } from "../util/functions"
 
 import { render } from '@testing-library/react'
 import Task from "./Task"
