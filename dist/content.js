@@ -214,7 +214,8 @@ async function createBlock() {
   
   let button = document.createElement("button")
   button.onclick = (() => chrome.runtime.sendMessage({ message: "pomodoro" }))
-  button.setAttribute("style", "all: initial; margin-top: 3vh; font-weight: bold; font-family: arial black; font-size: 7vh; width: 25vh; height: 10.5vh; border-radius: 4.5vh; color: black; background-color: red; border; border: 0.6vh solid black; cursor: pointer; font-family: calibri; text-align: center;")
+  button.setAttribute("style", "all: initial; margin-top: 3vh; font-weight: bold; font-family: arial black; font-size: 7vh; width: 25vh; height: 10.5vh; border-radius: 4.5vh; " +
+  "color: black; background-color: red; border; border: 0.6vh solid black; cursor: pointer; font-family: calibri; text-align: center;")
   button.appendChild(timerTextBlock)
   mainContainer.appendChild(button);
   
@@ -283,19 +284,19 @@ async function createBox() {
 
   //create outer box
   AikiBox.id = "AikiBox"
-  AikiBox.setAttribute("style", "all: initial; cursor: move; position: fixed; bottom: 8vh; right: 8vh; width: 26vh; shake; " +
+  AikiBox.setAttribute("style", "all: initial; cursor: move; position: fixed; bottom: 8vh; right: 8vh; width: 26vh; min-width: 286px; " +
   "height: fit-content; z-index: 9999; background-color: white; border: 0.5vh solid green; border-radius: 1.8vh; " +
   "display: flex; flex-direction: column; align-items: center; box-sizing: border-box; box-shadow: inset 0 0 0.5vh black, 0 0 0.8vh 0.2vh black;")
   if (minimized) {AikiBox.style.display = "none"}
 
   //create minimize button
-  minimizeButtonDiv.setAttribute("style", "all: initial; min-height: 0.4vh; max-height: 0.4vh; min-width: 3.6vh; " + 
+  minimizeButtonDiv.setAttribute("style", "all: initial; min-height: 5px; max-height: 0.4vh; min-width: 32px; " + 
   "max-width: 3.6vh; cursor: pointer; align-self: flex-end; padding: 0.75vh; box-sizing: border-box;")
   minimizeButtonDiv.onclick = (() => minimize())
   //minimizeButtonDiv.onclick = (() => shakeBox(3))
 
   minimizeButton.textContent = ""
-  minimizeButton.setAttribute("style", "all: initial; background-color:	#505050; height: 0.3vh; " + 
+  minimizeButton.setAttribute("style", "all: initial; background-color:	#505050; height: 0.3vh; min-heigh: 4px; " + 
   "width: 100%; border-radius: 0.3vh; cursor: pointer; border: none; box-sizing: border-box; display: flex;")
   minimizeButtonDiv.appendChild(minimizeButton)
 
@@ -308,38 +309,39 @@ async function createBox() {
     const currentUrl = formatUrl(window.location.href);
     timeProcrast = timeProcrast["procrastination"].filter((i) => i.url === currentUrl)[0]
 
-    timeContainer.setAttribute("style", "all: initial; cursor: move; display:flex; flex-direction:row; align-items: center; margin-bottom: 0.25vh; margin-top: -0.5vh")
+    timeContainer.setAttribute("style", "all: initial; cursor: move; display:flex; flex-direction:row; align-items: center; margin-bottom: max(0.25vh, 3px); margin-top: max(-0.5vh, -6px)")
 
     //add icon left of text
     icon.src = timeProcrast["icon"]
-    icon.setAttribute("style", "all: initial; cursor: move; width: 1.75vh;")
+    icon.setAttribute("style", "all: initial; cursor: move; width: 1.75vh; min-width: 18px;")
     timeContainer.appendChild(icon)
 
     //creaye procrastination text from data
     timeTextT.textContent = Math.floor(timeProcrast["today"]/60) + " min. today"
-    timeTextC.setAttribute("style", "all: initial; cursor: move; color: black; font-size: 2vh; margin-left: 0.75vh; margin-right: 0.75vh; font-family: Trebuchet MS; font-weight: bold")
+    //timeTextC.setAttribute("style", "all: initial; cursor: move; color: black; font-size: font-size: 48px; margin-left: 0.75vh; margin-right: 0.75vh; font-family: Trebuchet MS; font-weight: bold")
+    timeTextC.setAttribute("style", "all: initial; cursor: move; color: black; font-size: max(2vh, 22px); margin-left: max(0.75vh, 8px); margin-right: max(0.75vh, 8px); font-family: Trebuchet MS; font-weight: bold")
     timeTextC.appendChild(timeTextT)
     timeContainer.appendChild(timeTextC)
 
     //add icon right of text
     icon2.src = timeProcrast["icon"]
-    icon2.setAttribute("style", "all: initial; cursor: move; width: 1.75vh;")
+    icon2.setAttribute("style", "all: initial; cursor: move; width: 1.75vh; min-width: 18px;")
     timeContainer.appendChild(icon2)
 
     AikiBox.appendChild(timeContainer)
   }
 
   //create timer button
-  timerButton.setAttribute("style", "all: initial; cursor: pointer; background-color: red; font-size: 2.5vh; color: black; font-family: Arial black; " +
-  "margin: 0.33vh 0vh 0.33vh 0vh; padding: 0.25vh 1vh 0.25vh 1vh; border-radius: 1.5vh; border: 0.3vh solid black")
+  timerButton.setAttribute("style", "all: initial; cursor: pointer; background-color: red; font-size: max(2.5vh, 26px); color: black; font-family: Arial black; " +
+  "margin: max(0.33vh, 4px) 0vh max(0.33vh, 4px) 0vh; padding: max(0.25vh, 3px) max(1vh, 11px) max(0.25vh, 3px) max(1vh, 11px); border-radius: max(1.5vh, 16px); border: max(0.25vh, 3px) solid black;")
   timerButton.onclick = (() => chrome.runtime.sendMessage({ message: "pomodoro" }))
   AikiBox.appendChild(timerButton)
 
   //create pomodoro counter
   let pomodoroCount = await getPomodoroCount();
   pomodoroTextC.textContent = "Pomodoros Today: " + pomodoroCount
-  pomodoroTextC.setAttribute("style", "all: initial; cursor: move; color: black; font-size: 2vh; margin-left: 0.75vh; margin-right: 0.75vh; margin-bottom: 5vh; font-family: Trebuchet MS; font-weight: bold")
-  pomodoroContainer.setAttribute("style", "margin-bottom: 0.5vh")
+  pomodoroTextC.setAttribute("style", "all: initial; cursor: move; color: black; font-size: max(2vh, 22px); margin-left: max(0.75vh, 8px); margin-right: max(0.75vh, 8px); margin-bottom: max(5vh, 55px); font-family: Trebuchet MS; font-weight: bold")
+  pomodoroContainer.setAttribute("style", "margin-bottom: max(0.5vh, 6px)")
   pomodoroContainer.appendChild(pomodoroTextC)
   AikiBox.appendChild(pomodoroContainer)
 
