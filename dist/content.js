@@ -214,8 +214,8 @@ async function createBlock() {
   
   let button = document.createElement("button")
   button.onclick = (() => chrome.runtime.sendMessage({ message: "pomodoro" }))
-  button.setAttribute("style", "all: initial; margin-top: 3vh; font-weight: bold; font-family: arial black; font-size: 7vh; width: 25vh; height: 10.5vh; border-radius: 4.5vh; " +
-  "color: black; background-color: red; border; border: 0.6vh solid black; cursor: pointer; font-family: calibri; text-align: center;")
+  button.setAttribute("style", "all: initial; margin-top: max(3vh, 33px); font-weight: bold; font-family: arial black; font-size: 7vh; width: 25vh; height: 10.5vh; border-radius: 4.5vh; " +
+  "color: black; background-color: red; border: max(0.6vh, 5px) solid black; cursor: pointer; font-family: calibri; text-align: center;")
   button.appendChild(timerTextBlock)
   mainContainer.appendChild(button);
   
@@ -285,13 +285,13 @@ async function createBox() {
   //create outer box
   AikiBox.id = "AikiBox"
   AikiBox.setAttribute("style", "all: initial; cursor: move; position: fixed; bottom: 8vh; right: 8vh; width: 26vh; min-width: 286px; " +
-  "height: fit-content; z-index: 9999; background-color: white; border: 0.5vh solid green; border-radius: 1.8vh; " +
+  "height: fit-content; z-index: 9999; background-color: white; border: 0.5vh solid green; border-radius: max(1.8vh, 20px); " +
   "display: flex; flex-direction: column; align-items: center; box-sizing: border-box; box-shadow: inset 0 0 0.5vh black, 0 0 0.8vh 0.2vh black;")
   if (minimized) {AikiBox.style.display = "none"}
 
   //create minimize button
-  minimizeButtonDiv.setAttribute("style", "all: initial; min-height: 5px; max-height: 0.4vh; min-width: 32px; " + 
-  "max-width: 3.6vh; cursor: pointer; align-self: flex-end; padding: 0.75vh; box-sizing: border-box;")
+  minimizeButtonDiv.setAttribute("style", "all: initial; min-height: 5px; height: 0.4vh; min-width: 32px; " + 
+  "width: 3.6vh; cursor: pointer; align-self: flex-end; padding: 0.75vh; box-sizing: border-box;")
   minimizeButtonDiv.onclick = (() => minimize())
   //minimizeButtonDiv.onclick = (() => shakeBox(3))
 
