@@ -284,8 +284,8 @@ async function createBox() {
 
   //create outer box
   AikiBox.id = "AikiBox"
-  AikiBox.setAttribute("style", "all: initial; cursor: move; position: fixed; bottom: 8vh; right: 8vh; width: 26vh; min-width: 286px; " +
-  "height: fit-content; z-index: 9999; background-color: white; border: 0.5vh solid green; border-radius: max(1.8vh, 20px); " +
+  AikiBox.setAttribute("style", "all: initial; cursor: move; position: fixed; bottom: 8vh; right: 8vh; width: 26vh; min-width: 286px; max-width: 32vh; " +
+  "height: fit-content; z-index: 9999; background-color: white; border: max(0.5vh, 6px) solid green; border-radius: max(1.8vh, 20px); " +
   "display: flex; flex-direction: column; align-items: center; box-sizing: border-box; box-shadow: inset 0 0 0.5vh black, 0 0 0.8vh 0.2vh black;")
   if (minimized) {AikiBox.style.display = "none"}
 
@@ -296,8 +296,8 @@ async function createBox() {
   //minimizeButtonDiv.onclick = (() => shakeBox(3))
 
   minimizeButton.textContent = ""
-  minimizeButton.setAttribute("style", "all: initial; background-color:	#505050; height: 0.3vh; min-heigh: 4px; " + 
-  "width: 100%; border-radius: 0.3vh; cursor: pointer; border: none; box-sizing: border-box; display: flex;")
+  minimizeButton.setAttribute("style", "all: initial; background-color:	#505050; height: 0.3vh; min-height: 4px; " + 
+  "width: 100%; border-radius: 2vh; cursor: pointer; border: none; box-sizing: border-box; display: flex;")
   minimizeButtonDiv.appendChild(minimizeButton)
 
   AikiBox.appendChild(minimizeButtonDiv)
@@ -429,15 +429,15 @@ async function getPomodoroCount() {
 
 function updateBox() {
   if (pomodoroState === "pomodoro" || (pomodoroState === "pause" && prePomodoroState === "pomodoro") ) {
-    AikiBox.style.border = "0.5vh solid red"
+    AikiBox.style.border = "max(0.5vh, 6px) solid red"
     timerButton.style.backgroundColor = "red"
   }
   else if (pomodoroState === "break" || (pomodoroState === "pause" && prePomodoroState === "break") ) {
-    AikiBox.style.border = "0.5vh solid green"
+    AikiBox.style.border = "max(0.5vh, 6px) solid green"
     timerButton.style.backgroundColor = "green"
   }
   else {
-    AikiBox.style.border = "0.5vh solid black"
+    AikiBox.style.border = "max(0.5vh, 6px) solid black"
     console.log(pomodoroState + " - " + prePomodoroState)
   }
 }
