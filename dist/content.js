@@ -163,7 +163,7 @@ async function createBlock() {
 
   //title
   let h1 = document.createElement("h1");
-  h1.setAttribute("style", "color: white; font-family: Arial; font-size: 5vh; font-weight: bold;");
+  h1.setAttribute("style", "color: white; font-family: Arial; font-size: 5vh; font-weight: bold; margin-bottom: 1.75vh;");
   let title = document.createTextNode("Blocked during Pomodoro");
   h1.appendChild(title);
   mainContainer.appendChild(h1);
@@ -183,7 +183,7 @@ async function createBlock() {
   //Create element for each productivity site in local storage
   for (let i = 0; i < productivity.length; i++) { 
     let li = document.createElement("div");
-    li.setAttribute("style", "all: initial; cursor: pointer; color: white; font-family: Arial; font-size: 3vh; display: flex; flex-direction: row; align-items: center; gap: 1.6vh; margin: 3vh 0;");
+    li.setAttribute("style", "all: initial; cursor: pointer; color: white; font-family: Arial; font-size: 3vh; display: flex; flex-direction: row; align-items: center; gap: 1.6vh; margin: 1.5vh 0;");
 
     //icon
     let img = document.createElement("img")
@@ -212,7 +212,7 @@ async function createBlock() {
 
   //task input
   var taskInputDiv = document.createElement("div")
-  taskInputDiv.setAttribute("style", "display: flex; align-items: flex-start;")
+  taskInputDiv.setAttribute("style", "display: flex; align-items: flex-start; margin-top: 1.75vh;")
 
   var taskInputEntry = document.createElement("input")
   taskInputEntry.setAttribute("style", "all: initial; color: black; font-family: Arial; font-size: 3vh; background-color: white; padding: 0.5vh; border-radius: 1vh 0 0 1vh; height: 100%")
@@ -501,8 +501,8 @@ async function updateTasks() { //update displayed lsit of tasks
     li.appendChild(document.createTextNode(text));
 
     //check if task is completed
-    if (listOfTasks[i].completed) {li.setAttribute("style", "all: initial; color: white; font-family: Arial; font-size: 3vh; text-decoration:line-through; display: block; margin: 3vh; cursor: pointer;");}
-    else {li.setAttribute("style", "all: initial; color: white; font-family: Arial; font-size: 3vh; display: block; margin: 3vh; cursor: pointer;");}
+    if (listOfTasks[i].completed) {li.setAttribute("style", "all: initial; color: white; font-family: Arial; font-size: 3vh; text-decoration:line-through; display: block; margin: 1.5vh 0; cursor: pointer;");}
+    else {li.setAttribute("style", "all: initial; color: white; font-family: Arial; font-size: 3vh; display: block; margin: 1.5vh 0; cursor: pointer;");}
 
     li.onclick = (() => completeTask(text))
 
