@@ -291,7 +291,7 @@ async function createBox() {
 
   //create minimize button
   minimizeButtonDiv.setAttribute("style", "all: initial; min-height: 5px; height: 0.4vh; min-width: 32px; " + 
-  "width: 3.6vh; cursor: pointer; align-self: flex-end; padding: 0.75vh; box-sizing: border-box;")
+  "width: 3.6vh; cursor: pointer; align-self: flex-end; padding: max(0.75vh, 8px); box-sizing: border-box;")
   minimizeButtonDiv.onclick = (() => minimize())
   //minimizeButtonDiv.onclick = (() => shakeBox(3))
 
