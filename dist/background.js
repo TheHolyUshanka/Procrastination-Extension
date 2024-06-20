@@ -98,6 +98,8 @@ chrome.runtime.onMessage.addListener(async function(request, sender, sendRespons
         case "addTask":
             await addToTaskList(request.text)
             sendMessageToAllContentScripts("newTaskUpdate", "")
+            //chrome.runtime.sendMessage({ message: "sendData", class: "Task", data: {Action: "Added", TaskId: taskId}})
+            //sendData("Task", {Action: "Added", TaskId: taskId})
             break
         case "completeTask":
             let tmp = await updateTask(request.text, sendResponse)

@@ -228,7 +228,9 @@ async function createBlock() {
 
   taskInputButton.onclick = function() {
     if (taskInputEntry.value.length > 0) {
+      let taskId = Date.now();
       chrome.runtime.sendMessage({ message: "addTask", text: taskInputEntry.value})
+      chrome.runtime.sendMessage({ message: "sendData", class: "Task", data: {Action: "Added", TaskId: taskId}})
       taskInputEntry.value = ''
     }
   }

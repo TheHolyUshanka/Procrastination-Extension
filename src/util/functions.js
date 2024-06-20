@@ -38,6 +38,7 @@ export const addCurentToList = async (key, setter) => {
             }
         }
     })
+    chrome.runtime.sendMessage({ message: "giveStateForContent"})
 };
 
 //returns if the current url is in the specified list
@@ -148,20 +149,23 @@ export const addToTaskList = async (task, setter) => {
     let taskId = Date.now();
     let tmp = []
 
-    //if task list is not already created
-    chrome.storage.local.get("listOfTasks", function(List){
-        if (typeof List["listOfTasks"] === 'undefined') {
-            tmp = [{name: task, id: taskId, completed: false}]
-            chrome.storage.local.set({ "listOfTasks": tmp });
-        }
-        else { //add to the task list
-            tmp = [...List["listOfTasks"], {name: task, id: taskId, completed: false}]
-            chrome.storage.local.set({ "listOfTasks": tmp });
-        }
-    })
+    if (task.length > 0) {
 
-    setter(tmp)
-    chrome.runtime.sendMessage({ message: "sendData", class: "Task", data: {Action: "Added", TaskId: taskId}})
+        //if task list is not already created
+        chrome.storage.local.get("listOfTasks", function(List){
+            if (typeof List["listOfTasks"] === 'undefined') {
+                tmp = [{name: task, id: taskId, completed: false}]
+                chrome.storage.local.set({ "listOfTasks": tmp });
+            }
+            else { //add to the task list
+                tmp = [...List["listOfTasks"], {name: task, id: taskId, completed: false}]
+                chrome.storage.local.set({ "listOfTasks": tmp });
+            }
+        })
+
+        setter(tmp)
+        chrome.runtime.sendMessage({ message: "sendData", class: "Task", data: {Action: "Added", TaskId: taskId}})
+    }
 };
 
 export const completeTask = async (task) => {
