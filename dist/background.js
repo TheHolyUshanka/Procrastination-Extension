@@ -95,6 +95,10 @@ chrome.runtime.onMessage.addListener(async function(request, sender, sendRespons
         case "sendData":
             sendData(request.class, request.data)
             break
+        case "addTask":
+            await addToTaskList(request.text)
+            sendMessageToAllContentScripts("newTaskUpdate", "")
+            break
         case "completeTask":
             let tmp = await updateTask(request.text, sendResponse)
             // console.log(tmp)
@@ -119,7 +123,8 @@ function startPomodoro(time) {
     if (timerState === "none" || timerState === "break") {
         currentTimer = time
         timerState = "pomodoro"
-        chrome.runtime.sendMessage({ message: "Timer State", text: timerState })
+        sendMessage({ message: "Timer State", text: timerState })
+        //chrome.runtime.sendMessage({ message: "Timer State", text: timerState })
         runTime()
         intervalId = setInterval(runTime, 1000)
     }
@@ -137,7 +142,8 @@ function pause() {
     if (timerState !== "pause") {
         prePauseState = timerState;
         timerState = "pause"
-        chrome.runtime.sendMessage({ message: "Timer State", text: timerState })
+        sendMessage({ message: "Timer State", text: timerState })
+        //chrome.runtime.sendMessage({ message: "Timer State", text: timerState })
         clearInterval(intervalId);
     }
 };
@@ -145,7 +151,8 @@ function pause() {
 function resume() {
     if (timerState === "pause") {
         timerState = prePauseState
-        chrome.runtime.sendMessage({ message: "Timer State", text: timerState })
+        sendMessage({ message: "Timer State", text: timerState }) 
+        //chrome.runtime.sendMessage({ message: "Timer State", text: timerState })
         intervalId = setInterval(runTime, 1000)
     }
 };
@@ -157,7 +164,8 @@ async function runTime() {
         if (timerState === "pomodoro") { //finsih pomodoro
             completePomodoro()
             startBreak(settings.Break*60)
-            chrome.runtime.sendMessage({ message: "Timer State", text: timerState })
+            sendMessage({ message: "Timer State", text: timerState })
+            //chrome.runtime.sendMessage({ message: "Timer State", text: timerState })
             sendMessageToAllContentScripts("Timer Value", timeFormatter(currentTimer))
 
             //update pomodoro counter
@@ -169,13 +177,16 @@ async function runTime() {
         }
         else { //finish break -> back to none
             timerState = "none"
-            chrome.runtime.sendMessage({ message: "Timer State", text: timerState })
+            sendMessage({ message: "Timer State", text: timerState })
+            //chrome.runtime.sendMessage({ message: "Timer State", text: timerState })
             sendMessageToAllContentScripts("completeBreak")
         }
     }
     else { //else reduce timer and send message to all content scripts and popup
         currentTimer--
-        chrome.runtime.sendMessage({ message: "Timer Value", timer: timeFormatter(currentTimer) });
+        
+        sendMessage({ message: "Timer Value", timer: timeFormatter(currentTimer) })
+        //chrome.runtime.sendMessage({ message: "Timer Value", timer: timeFormatter(currentTimer) });
         sendMessageToAllContentScripts("Timer Value", timeFormatter(currentTimer))
     }
 };
@@ -213,11 +224,16 @@ async function sendMessageToCurrentContentScript(identifier, text) {
 }
 
 async function sendMessageToAllContentScripts(identifier, text) {
-    chrome.tabs.query({}, function(tabs) {
-      tabs.forEach(function(tab) {
-        chrome.tabs.sendMessage(tab.id, { message: identifier, text: text });
-      });
-    });
+
+    try {
+        chrome.tabs.query({}, function(tabs) {
+            tabs.forEach(function(tab) {
+              chrome.tabs.sendMessage(tab.id, { message: identifier, text: text });
+            });
+        });
+    } catch (error) {
+        console.log("damn")
+    }
   }
 
 //get the list from local storage under the given name
@@ -295,13 +311,14 @@ function startTimer() {
         timerRunning = true
     }
 }
+//start tracking time right away
 startTimer();
 
 async function timer() {
-    if (timerState !== "pomodoro") {
+    //if (timerState !== "pomodoro" || currentSiteState !== "procrastination") { //update time if not doing pomodoro
         let tmp = await getCurrentTab();
         updateTime(currentSiteState, tmp)
-    }
+    //}
 }
 
 function updateTime(localList, site) {
@@ -322,7 +339,8 @@ function updateTime(localList, site) {
         }
     })
 
-    //update the local saved time data
+    //update the local saved time data, unless in pomodoro and on blocked procrastination site.
+    if (localList !== "procrastination" || timerState !== "pomodoro")
     chrome.storage.local.get(localList, function(List){
         let tmp = List[localList]
         let tmpp = []
@@ -353,6 +371,25 @@ function updateTime(localList, site) {
     });
 
 }
+
+async function addToTaskList(task) {
+    //let today = new Date().getDay();
+    let taskId = Date.now();
+    let tmp = []
+
+    //if task list is not already created
+    chrome.storage.local.get("listOfTasks", function(List){
+        if (typeof List["listOfTasks"] === 'undefined') {
+            tmp = [{name: task, id: taskId, completed: false}]
+            chrome.storage.local.set({ "listOfTasks": tmp });
+        }
+        else { //add to the task list
+            tmp = [...List["listOfTasks"], {name: task, id: taskId, completed: false}]
+            chrome.storage.local.set({ "listOfTasks": tmp });
+        }
+    })
+
+};
 
 
 async function newDay(list, today) {
@@ -494,7 +531,8 @@ async function updateTask(taskName) {
         }
         chrome.storage.local.set({ "listOfTasks": updated });
 
-        chrome.runtime.sendMessage({ message: "Update Tasks", text: taskName})
+        sendMessage({ message: "Update Tasks", text: taskName})
+        //chrome.runtime.sendMessage({ message: "Update Tasks", text: taskName})
         sendMessageToAllContentScripts("Update Tasks", taskName)
 
         return returnValue;
@@ -543,3 +581,13 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
         checkTab()
     }
 });
+
+
+
+function sendMessage(object) {
+    try {
+        chrome.runtime.sendMessage(object)
+    } catch (error) {
+        console.log("Error for sending message: " + error)
+    }
+}

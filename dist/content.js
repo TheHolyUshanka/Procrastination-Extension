@@ -5,6 +5,7 @@ console.log("content")
 let pomodoroState = "none";
 let prePomodoroState = pomodoroState
 let procrastinating = false
+let currentTaskInput = ""
 
 //text nodes
 const textNode = document.createTextNode("25:00");
@@ -93,6 +94,9 @@ chrome.runtime.onMessage.addListener(async function(request, sender, sendRespons
           createBox(); //keep box on screen during pomodoro or break regardless of site
         }
       }
+      break
+    case "newTaskUpdate":
+      updateTasks()
       break
     case "procrastinationTime": //update pomodoro time display
       timeTextT.textContent = Math.floor(request.text/60) + " min. today"
@@ -205,8 +209,36 @@ async function createBlock() {
   mainContainer.appendChild(l_container);
 
 
-  //timer button
+  //task input
+  var taskInputDiv = document.createElement("div")
+  taskInputDiv.setAttribute("style", "display: flex; align-items: flex-start;")
 
+  var taskInputEntry = document.createElement("input")
+  taskInputEntry.setAttribute("style", "all: initial; color: black; font-family: Arial; font-size: 3vh; background-color: white; padding: 0.5vh; border-radius: 1vh 0 0 1vh; height: 100%")
+  taskInputEntry.size = "16"
+
+  // taskInputEntry.onchange = function() {
+  //   currentTaskInput = taskInputEntry.value
+  // }
+
+  var taskInputButton = document.createElement("button")
+  taskInputButton.setAttribute("style", "all: initial; color: white; font-family: Arial; font-size: 2vh; background-color: green; padding: 0.5vh 1.5vh 0.5vh 1.5vh; border-radius: 0 1vh 1vh 0; height: 100%")
+  taskInputButton.appendChild(document.createTextNode("Add Task"));
+
+  taskInputButton.onclick = function() {
+    if (taskInputEntry.value.length > 0) {
+      chrome.runtime.sendMessage({ message: "addTask", text: taskInputEntry.value})
+      taskInputEntry.value = ''
+    }
+  }
+
+  taskInputDiv.appendChild(taskInputEntry)
+  taskInputDiv.appendChild(taskInputButton)
+
+  mainContainer.appendChild(taskInputDiv);
+
+
+  //timer button
   if (!pomodoroState === "none") {
     const time = await chrome.runtime.sendMessage({message: "get time"})
     timerButton.textContent = time
@@ -218,7 +250,7 @@ async function createBlock() {
   "color: black; background-color: red; border: max(0.6vh, 5px) solid black; cursor: pointer; font-family: calibri; text-align: center;")
   button.appendChild(timerTextBlock)
   mainContainer.appendChild(button);
-  
+
 
   document.body.appendChild(mainContainer);
 }
@@ -312,9 +344,13 @@ async function createBox() {
     timeContainer.setAttribute("style", "all: initial; cursor: move; display:flex; flex-direction:row; align-items: center; margin-bottom: max(0.25vh, 3px); margin-top: max(-0.5vh, -6px)")
 
     //add icon left of text
-    icon.src = timeProcrast["icon"]
-    icon.setAttribute("style", "all: initial; cursor: move; width: 1.75vh; min-width: 18px;")
-    timeContainer.appendChild(icon)
+    try {
+      icon.src = timeProcrast["icon"]
+      icon.setAttribute("style", "all: initial; cursor: move; width: 1.75vh; min-width: 18px;")
+      timeContainer.appendChild(icon)
+    } catch (error) {
+        console.error('No icon for you:', error.message);
+    }
 
     //creaye procrastination text from data
     timeTextT.textContent = Math.floor(timeProcrast["today"]/60) + " min. today"
@@ -324,9 +360,14 @@ async function createBox() {
     timeContainer.appendChild(timeTextC)
 
     //add icon right of text
-    icon2.src = timeProcrast["icon"]
-    icon2.setAttribute("style", "all: initial; cursor: move; width: 1.75vh; min-width: 18px;")
-    timeContainer.appendChild(icon2)
+    try {
+      icon2.src = timeProcrast["icon"]
+      icon2.setAttribute("style", "all: initial; cursor: move; width: 1.75vh; min-width: 18px;")
+      timeContainer.appendChild(icon2)
+    } catch (error) {
+        console.error('No icon for you:', error.message);
+    }
+
 
     AikiBox.appendChild(timeContainer)
   }
