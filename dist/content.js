@@ -177,6 +177,7 @@ async function createBlock() {
   //productivity container
   var p_container = document.createElement("ul");
   p_container.setAttribute("id", "ProductivityContainer");
+  p_container.setAttribute("style", "list-style-type: circle; display: flex; flex-direction: column; flex-wrap: wrap; max-height: 70vh;")
 
 
   //Create element for each productivity site in local storage
@@ -201,7 +202,7 @@ async function createBlock() {
 
   //task container
   t_container.setAttribute("id", "ProductivityContainer");
-  t_container.setAttribute("style", "list-style-type: circle; display: block;")
+  t_container.setAttribute("style", "list-style-type: circle; display: flex; flex-direction: column; flex-wrap: wrap; max-height: 70vh;")
   
   updateTasks()
   l_container.appendChild(t_container);
