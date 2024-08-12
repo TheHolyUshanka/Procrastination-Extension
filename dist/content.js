@@ -352,11 +352,14 @@ async function createBox() {
       icon.setAttribute("style", "all: initial; cursor: move; width: 1.75vh; min-width: 18px;")
       timeContainer.appendChild(icon)
     } catch (error) {
-        console.error('No icon for you:', error.message);
+        //console.error('No icon for you:', error.message);
     }
 
-    //creaye procrastination text from data
-    timeTextT.textContent = Math.floor(timeProcrast["today"]/60) + " min. today"
+    //create procrastination text from data
+    if (timeProcrast.today !== undefined) {
+      timeTextT.textContent = Math.floor(timeProcrast.today/60) + " min. today"
+    }
+
     //timeTextC.setAttribute("style", "all: initial; cursor: move; color: black; font-size: font-size: 48px; margin-left: 0.75vh; margin-right: 0.75vh; font-family: Trebuchet MS; font-weight: bold")
     timeTextC.setAttribute("style", "all: initial; cursor: move; color: black; font-size: max(2vh, 22px); margin-left: max(0.75vh, 8px); margin-right: max(0.75vh, 8px); font-family: Trebuchet MS; font-weight: bold")
     timeTextC.appendChild(timeTextT)

@@ -226,7 +226,6 @@ async function sendMessageToCurrentContentScript(identifier, text) {
 }
 
 async function sendMessageToAllContentScripts(identifier, text) {
-
     try {
         chrome.tabs.query({}, function(tabs) {
             tabs.forEach(function(tab) {
@@ -347,26 +346,28 @@ function updateTime(localList, site) {
         let tmp = List[localList]
         let tmpp = []
         //loop over and create new updated list
-        for (let index = 0; index < tmp.length; index++) {
-            if (tmp[index]["url"] === site) {
-                let time = tmp[index]["today"] + 1
-                tmpp.push({...tmp[index], "today": time})
+        if (tmp !== undefined) {
+            for (let index = 0; index < tmp.length; index++) {
+                if (tmp[index]["url"] === site) {
+                    let time = tmp[index]["today"] + 1
+                    tmpp.push({...tmp[index], "today": time})
 
-                //send message to update current content script timer
-                if (localList === "procrastination") {
-                    sendMessageToCurrentContentScript("procrastinationTime", time)
-                    streakProcrast++
-                    if (streakProcrast >= 5*60) {
+                    //send message to update current content script timer
+                    if (localList === "procrastination") {
+                        sendMessageToCurrentContentScript("procrastinationTime", time)
+                        streakProcrast++
+                        if (streakProcrast >= 5*60) {
+                            streakProcrast = 0
+                            sendMessageToCurrentContentScript("shake")
+                        }
+                    }
+                    else {
                         streakProcrast = 0
-                        sendMessageToCurrentContentScript("shake")
                     }
                 }
                 else {
-                    streakProcrast = 0
+                    tmpp.push(tmp[index])
                 }
-            }
-            else {
-                tmpp.push(tmp[index])
             }
         }
         chrome.storage.local.set({ [localList]: tmpp });
@@ -456,32 +457,6 @@ async function updateSettings() {
     });
 }
 
-
-// //Back4App
-// Parse.initialize("vvgjf1Bl474RrmPDmHKNRPKKy2aU77YVMq75GSv9", "toTeUoz0Npcu3pDPt9KtRYGF0TzmS5JLC9W5QVu7");
-// Parse.serverURL = "https://parseapi.back4app.com/";
-
-// function sendData(className, data) {
-
-//     let currentDate = new Date().getDay();
-//     let test = {"Action": "test", "List": "me", "Name": "EMIL", "Date": currentDate}
-
-
-//     const xhr = new XMLHttpRequest();
-
-//     //set Back4App headers
-//     xhr.open("POST", "https://parseapi.back4app.com/classes/" + "ListAction", true);
-//     xhr.setRequestHeader('X-Parse-Application-Id', "vvgjf1Bl474RrmPDmHKNRPKKy2aU77YVMq75GSv9");
-//     xhr.setRequestHeader('X-Parse-Javascript-Key', "toTeUoz0Npcu3pDPt9KtRYGF0TzmS5JLC9W5QVu7");
-//     xhr.setRequestHeader('Content-Type', 'application/json');
-
-//     xhr.onerror = function() {
-//         console.error('Error occurred while sending data to Back4App.');
-//     };
-
-//     xhr.send(JSON.stringify(test));
-// }
-
 function sendData(className, dataObject) {
     //get unique id
     chrome.storage.local.get("aikiData", function(List){
@@ -549,7 +524,6 @@ async function newDayData() {
     let listOfTasks = await chrome.storage.local.get(["listOfTasks"])
     let aikiData = await chrome.storage.local.get(["aikiData"])
 
-
     //calculate needed data
     let taskCount = listOfTasks["listOfTasks"].filter((task) => task.completed);
 
@@ -583,8 +557,6 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
         checkTab()
     }
 });
-
-
 
 function sendMessage(object) {
     try {

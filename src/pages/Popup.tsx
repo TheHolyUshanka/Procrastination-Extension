@@ -237,7 +237,7 @@ const Popup = () => {
         className='PomodoroButton' onClick={async () => sendMessageToBackground("pomodoro")}>{timerState === "none" ? "Start" : timer}</button>
         <button style={{ width: "92px", height: "37px", borderRadius: "16px", fontSize: "16px", fontFamily: "arial black", color: "white", backgroundColor: "dodgerblue", cursor: "pointer"}} 
         className='StatsButton' onClick={ () => currentPage === "Settings" ? setCurrentPage("Main"): setCurrentPage("Settings")}>Settings</button>
-        <button className='test' onClick={() => sendMessageToBackground("test")}>test</button>
+        {/*<button className='test' onClick={() => sendMessageToBackground("test")}>test</button>*/}
       </div>
     </div>
   )
