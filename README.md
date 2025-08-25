@@ -7,4 +7,5 @@ In settings you can set length of Pomodoro and Break, and time of day the popup 
 
 ![Image](Capture1.PNG)
 ![Image](Capture2.PNG)
+![Image](Capture.PNG)
 ![Image](Capture3.PNG)
