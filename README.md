@@ -1,8 +1,10 @@
-Click "Load unpacked" and navigate to "dist" folder.
+# To run the application
+Click "Load unpacked" in Chrome extension and select manifest.json in "dist" folder.
 
-Use popup to label current site as either Procrastination or Productive
+# How to use
+Use the popup window to label the current website as either Procrastination or Productive website
 
-In settings you can set length of Pomodoro and Break, and time of day the popup should show up on procrastination sites
+In settings you can set length of Pomodoro and Break session, and what time of the day you would like the popup to show up on your procrastination websites
 
 # Screenshots
 
