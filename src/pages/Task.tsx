@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { completeTask } from '../util/functions';
 
 export default function Task(task: any) {

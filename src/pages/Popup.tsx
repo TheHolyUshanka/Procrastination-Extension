@@ -1,24 +1,21 @@
-import React, { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import "./popup.css"
-import { setTimerStateListner, 
-  redirectToUrlFromPopup, 
-  addCurentToList, 
-  isCurrentUrlInList, 
-  getList, 
-  sendMessageToBackground, 
-  setTimeListner,
-  addToTaskList,
-  sendMessageToBackgroundAndReturn,
-  setNewDayListnerForTask,
-  updateSettings } from "../util/functions"
-
-import { render } from '@testing-library/react'
 import Task from "./Task"
-
-
+import {  setTimerStateListner, 
+          redirectToUrlFromPopup, 
+          addCurentUrlToList, 
+          isCurrentUrlInList, 
+          getList, 
+          sendMessageToBackground, 
+          setTimeListner,
+          addToTaskList,
+          sendMessageToBackgroundAndReturn,
+          setNewDayListnerForTask,
+          updateSettings } from "../util/functions"
 
 
 const Popup = () => {
+  //is current url procrastination, productivity, or neither
   const [isProductivity, setIsProductivity] = useState(false);
   const [isProcrastination, setIsProcrastination] = useState(false);
 
@@ -27,6 +24,7 @@ const Popup = () => {
   const [listOfProcrastination, setListOfProcrastination] = useState([]);
   const [listOfTasks, setListOfTasks] = useState([]);
   const damnRef = useRef("no");
+  const [listSelectState, setListSelectStatee] = useState("Procrastination");
 
   //states for pomodoro timer
   const [timer, setTimer] = useState("25:00");
@@ -35,16 +33,13 @@ const Popup = () => {
 
   const [taskInput, setTaskInput] = useState("");
 
-  const [listSelectState, setListSelectStatee] = useState("Procrastination");
-
   const [currentPage, setCurrentPage] = useState("Main");
 
-  //settings
+  //settings, defualt till background script sends settings
   const [settings, setSettings] = useState({Pomodoro: 25, Break: 5, From: "00.00", To: "23.59", Pomodoros: 0})
-  // const [settingsPomodoroTime, setSettingsPomodoroTime] = useState("");
-  // const [settingsBreakTime, setSettingsBreakTime] = useState("");
 
-  //set the color during pomodoro
+
+  //color the button during pomodoro and break
   let color;
   if (timerState === "pomodoro") {
     color = "red"
@@ -64,55 +59,47 @@ const Popup = () => {
     }
   }
 
-  function sendData() {
-    let currentDate = new Date().getDay();
-    let test = {"Action": "test", "List": "me", "Name": "EMIL", "Date": currentDate}
+  //when initially opening popup window
+  useEffect(() => {
+    sendMessageToBackground("openedPopup")
 
-    const xhr = new XMLHttpRequest();
-    
-    //set Back4App headers
-    xhr.open("POST", "https://parseapi.back4app.com/classes/" + "ListAction", true);
-    xhr.setRequestHeader('X-Parse-Application-Id', "vvgjf1Bl474RrmPDmHKNRPKKy2aU77YVMq75GSv9");
-    xhr.setRequestHeader('X-Parse-Javascript-Key', "toTeUoz0Npcu3pDPt9KtRYGF0TzmS5JLC9W5QVu7");
-    xhr.setRequestHeader('Content-Type', 'application/json');
-
-    xhr.onerror = function() {
-        console.error('Error occurred while sending data to Back4App.');
+    const fetchData = async () => {
+      setSettings(await getList("aikiData")) //get settings from background
+      setTimeListner(setTimer) //listen for background script time ticking
+      setTimerStateListner(setTimerState) //listen for background script time state change
+      setNewDayListnerForTask(setListOfTasks) //listen for background script for new day
     };
 
-    xhr.send(JSON.stringify(test));
-}
-
+    fetchData();
+  }, []);
 
   useEffect(() => {
+
+    //update data when procrastination/productivity state changes, or list of tasks changes
     const fetchData = async () => {
-      setPrePauseState(await sendMessageToBackgroundAndReturn("getPauseState"))
+      //set states for procrastination, productivity, or neither
       setIsProductivity(await isCurrentUrlInList("productivity"));
       setIsProcrastination(await isCurrentUrlInList("procrastination"));
+      setPrePauseState(await sendMessageToBackgroundAndReturn("getPauseState"))
 
+      //get list data for productivity, procrastination, and tasks
       setListOfProductivity(await getList("productivity"))
       setListOfProcrastination(await getList("procrastination"))
       setListOfTasks(await getList("listOfTasks"))
 
+      //get needed data for timer
       setTimer(await sendMessageToBackgroundAndReturn("get time"))
       setTimerState(await sendMessageToBackgroundAndReturn("get state"))
     };
+
     fetchData();
+
   }, [isProductivity, isProcrastination, listOfTasks]);
 
-  useEffect(() => {
-    sendMessageToBackground("openedPopup")
-    const fetchData = async () => {
-      setTimeListner(setTimer)
-      setNewDayListnerForTask(setListOfTasks)
-      setTimerStateListner(setTimerState)
-      setSettings(await getList("aikiData"))
-    };
-    fetchData();
-  }, []);
 
+
+  //create list to display of either procrastination, procrastination, or tasks
   let contentHTML
-  let today = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"][new Date().getDay()]
 
   try {
     if (listSelectState === "Productivity") {
@@ -209,16 +196,16 @@ const Popup = () => {
   let button;
   if (isProductivity) {
     button = <div className='topContainer'>
-      <button className='topButton' onClick={() => addCurentToList("productivity", setIsProductivity)}>Remove Productivity</button>
+      <button className='topButton' onClick={() => addCurentUrlToList("productivity", setIsProductivity)}>Remove Productivity</button>
     </div>
   } else if (isProcrastination) {
     button = <div className='topContainer'>
-      <button className='topButton' onClick={() => addCurentToList("procrastination", setIsProcrastination)}>Remove Procrastionation</button>
+      <button className='topButton' onClick={() => addCurentUrlToList("procrastination", setIsProcrastination)}>Remove Procrastionation</button>
     </div>
   } else {
     button = <div className='topContainer'>
-      <button className='topButtons' style={{ backgroundColor: "green" }} onClick={() => addCurentToList("productivity", setIsProductivity)}>Productivity</button>
-      <button className='topButtons' style={{ backgroundColor: "red" }} onClick={() => addCurentToList("procrastination", setIsProcrastination)}>Procrastionation</button>
+      <button className='topButtons' style={{ backgroundColor: "green" }} onClick={() => addCurentUrlToList("productivity", setIsProductivity)}>Productivity</button>
+      <button className='topButtons' style={{ backgroundColor: "red" }} onClick={() => addCurentUrlToList("procrastination", setIsProcrastination)}>Procrastionation</button>
     </div>
   }
 
@@ -226,17 +213,45 @@ const Popup = () => {
   return (
     <div>
       {button}
-      <hr style={{ height: "1px", color: "black", background: "black", marginTop: "4px", marginBottom: "8px" }}></hr>
 
+      <hr style={{ height: "1px", color: "black", background: "black", marginTop: "4px", marginBottom: "8px" }}></hr>
 
       {mainWindow}
 
       <hr style={{ height: "1px", color: "black", background: "black", marginTop: "8px", marginBottom: "4px" }}></hr>
       <div className='botContainer' style={{ display: 'flex', flexDirection: "row", gap: "8px" }}>
-        <button style={{ width: "92px", height: "37px", borderRadius: "16px", fontSize: "20px", fontFamily: "arial black", color: timerState === "none" ? "white" : "black", cursor: "pointer", backgroundColor: timerState === "none" ? "dodgerblue" : color }} 
-        className='PomodoroButton' onClick={async () => sendMessageToBackground("pomodoro")}>{timerState === "none" ? "Start" : timer}</button>
-        <button style={{ width: "92px", height: "37px", borderRadius: "16px", fontSize: "16px", fontFamily: "arial black", color: "white", backgroundColor: "dodgerblue", cursor: "pointer"}} 
-        className='StatsButton' onClick={ () => currentPage === "Settings" ? setCurrentPage("Main"): setCurrentPage("Settings")}>Settings</button>
+
+        {/*Pomodoro bottun to start and pause*/}
+        <button 
+          style={{ 
+            width: "92px", 
+            height: "37px", 
+            borderRadius: "16px", 
+            fontSize: "20px", 
+            fontFamily: "arial black", 
+            color: timerState === "none" ? "white" : "black", 
+            cursor: "pointer", 
+            backgroundColor: timerState === "none" ? "dodgerblue" : color }} 
+          className='PomodoroButton' 
+          onClick={async () => sendMessageToBackground("pomodoro")}>
+            {timerState === "none" ? "Start" : timer}
+        </button>
+        
+        {/*Go to settings button*/}
+        <button style={{ 
+          width: "92px", 
+          height: "37px", 
+          borderRadius: "16px", 
+          fontSize: "16px", 
+          fontFamily: "arial black", 
+          color: "white", 
+          backgroundColor: "dodgerblue", 
+          cursor: "pointer"}} 
+        className='StatsButton' 
+        onClick={ () => currentPage === "Settings" ? setCurrentPage("Main"): setCurrentPage("Settings")}>
+          Settings
+        </button>
+
         {/*<button className='test' onClick={() => sendMessageToBackground("test")}>test</button>*/}
       </div>
     </div>
